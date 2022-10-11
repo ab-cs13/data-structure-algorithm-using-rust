@@ -49,6 +49,22 @@ impl <'s,T>MyFirstStack<'s,T>{
        };
        self.head = NextPtr::NONEMPTY(Box::new(new_node));
     }
+    //pop method returns the reference of the element stored at head and deletes it.
+    pub fn pop(& mut self)->Option<& 's T>{
+     //we can't just do 
+     // 1: temp=head;
+     // 2: head = head.next;
+     // If we perform step 1, head will be unintialized and this is not allowed.
+     let temp_node = std::mem::replace(& mut self.head, NextPtr::EMPTY);
+     match temp_node{
+        NextPtr::EMPTY => Option::None,
+        NextPtr::NONEMPTY(next_element)=>{
+            self.head = next_element.next;
+            Option::Some(next_element.data)    
+        }
+     }
+     
+    }
 }
 #[test]
 fn test_my_first_stack(){
