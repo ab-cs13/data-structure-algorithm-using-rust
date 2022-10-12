@@ -1,8 +1,15 @@
 # data-structure-algorithm-using-rust
 To learn a language: implement data structures. Therefore, to understand the concepts of lifetime, borrow  and ownership of Rust, I am writing basic data structure. 
-
+* Note : This is not a rust tutorial
 ## Path
 We will start with concepts pointers in C to understand references of Rust. Then we will visit to other fundamental concepts.
+
+## Rust References
+Here I try my best to come up with missing pieces of programming fundamentals unknown to programmer (java programmers :) ) In java like programming language we rarely care about memory management. 
+
+### Fundamentals Of Memory Allocation
+* Stack and Heap :  
+
 
 
 ## Implemented data structures:
