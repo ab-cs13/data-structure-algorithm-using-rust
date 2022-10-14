@@ -41,7 +41,9 @@ impl <'s,T>MyFirstStack<'s,T>{
     // The returned value of replace function call will be assigned to new_node.next.
     pub fn push(& mut self, input:& 's T){
        let temp=std::mem::replace(& mut self.head, NextPtr::EMPTY); 
-       // In C, C++ and Java struct or class can't get memory from stack. Only from heap we can allocate memory.
+       // In Java class (equivalent to struct) can't get memory from stack. Only from heap we can allocate memory. This is because Java
+       // GC, manages the heap memory.
+       // In C/C++ we can get memory for struct from heap using malloc and from stack using alloc. 
        // But, in Rust we can allocate memory of struct from stack. Why we need wrap in Box i.e. allocate it again from heap ? 
        // When control goes out of the scope, stack gets cleared but we need the data even control goes outside the
        // scope of push method. 
