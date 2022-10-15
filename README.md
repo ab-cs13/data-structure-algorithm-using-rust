@@ -47,10 +47,66 @@ int * bar(){
   return &i; // i reclaimed at this point. Therefore &i is a dangling pointer
 }
 ```
+* Double Free
 
+### Ownership in Rust
+Rust approach towards memory safety issue is unique. It comes with a concept of Ownership. The rules of the ownership is quite simple but powerful. It has changed the way I as Java developer think of writing code. These rules are
+* Each value in Rust has an owner.
+* There can only be one owner at any point in time.
+* When owner goes out of scope the value is dropped.
+* If the value is copyable i.e. copy type, each owner will get it's own copy. All primitive types are copy type. Stack only values are copyable. 
+```
+fn foo(){
+  let i:i32=6; //copyable value
+  let j=i; // value gets copied. memory address of i and j are different
+  println("{}",i);
+  println("{}",j);
+}
+```
+* String literals are immutable. Because of it's immutable nature, we can have multiple owner of string literal. It doesn't make sense to have multiple copies of immutable data. Copying immutable values is waste of memory.     
+```
+fn foo_01(){
+    let s1:& str = "Hello"; 
+    let s2:& str = s1;
+    println!("s1 content :{},s1 address{:p}, string literal address:{:p}",s1, & s1, s1);
+    println!("s2 content :{},s2 address{:p}, string literal address:{:p}",s2, & s2, s2) ;
+}
+```
+* Note : Refer code to see memory representation in mod hello_reference
+* If the a variable mut or not holds a value or address of a value which is immutable, during assignment ownership transfer never happens.
+```
+/*
+  Though 'i' is mutable but value is immutable. So when we perform j=i, value gets copied to the memory 
+  location assigned to j. Similarly though s1 is mutable but it holds the address of an immutable element. 
+  Therefore, when perform s1=s2, ownership transfer never happens.
+*/
+#[test]
+fn foo_02(){
+  let mut i:i32=2;
+  let j:i32=i;
+  println!("i:{}",i);
+  println!("j:{}",j);
+  let mut s1:&str = "Hello";
+  let s2:&str =s1;
+  println!("s1:{}",s1);
+  println!("s2:{}",s2);
+}
 
+```  
+* If the value is mutable, there is always going to be one owner. During assignment operation move or ownership transfer happens making the source uninitialized. Uninitialized variables generate compilation issues if we try to access them. Uninitialized source is completely new for java programmer like me. If someone new in Rust, this particular concept is going to give hard time, particularly writing own linked list based data structure. Single owner rules ensures thread safety. The thumb rule of thread safety : single writer and multiple readers are mutually exclusive.
 
-
+```
+fn foo_03(){
+  //String in rust is mutable and memory is allocated from heap. Therefore, can't be copied.
+  let s1:String = String::from("Hello Rust"); 
+  //When we perform the assignment s2=s1, ownership is transferred.
+  let s2:String = s1; 
+  println!("s2:{}",s2);
+  //After move / transfer of ownership s1 become uninitialized. Hence accessing s1 generates compile time error
+  println!("s1:{}",s1);
+}
+```
+> String in Rust is a struct. Struct gets memory from stack unless until programmer want it in heap. String has a Vec internally. Vec gets its memory from heap      
 
 ## Implemented data structures:
 I am going to implement following data structures and algorithms. I won't be explaining those. Code has explanations why it is done that way. I have kept the explanation as simple as possible. Linked list based data structure is a good starting point.
