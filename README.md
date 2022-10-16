@@ -47,8 +47,75 @@ int * bar(){
   return &i; // i reclaimed at this point. Therefore &i is a dangling pointer
 }
 ```
-* Double Free
+* Double Free : TODO
+  
+### Reference
+> A reference is like a pointer in that it's an address that can be followed to access the data stored in the address; that data is owned by some other variable i.e. ownership is not transferred. Unlike pointer, a reference is guaranteed to point to a valid value of particular type for the life of the reference. First comes the variable and after that reference. Variable could be a smart pointer; Smart pointer is something which contains a pointer and additional information. For example vector or a string.
 
+* Constant reference to a constant.  
+```
+  let i:i32 =10; // i is immutable
+  let ref:&i32 = &i; // ref is a constant reference to a constant
+```
+
+* Constant reference to a mutable variable referred immutably.
+```
+#[test]
+fn foo_05(){
+  let mut i:i32 = 5; //mutable variable
+  //constant reference to a mutable variable. but variable is referred immutably hence reference can't change the value of i
+  let ref_1: & i32 = & i; 
+  println!("{}",ref_1);
+  //variable is referred immutably hence reference can't change the value of i
+  (*ref_1) = 6; //generates compilation error
+}
+```
+* Constant reference to a mutable variable referred mutably. 
+ ```
+ /**
+ * In foo_06() at any point in time, there is always going to single writer. value stored in 'i' can either be changed by
+ * ref_1 or 'i' itself. Single writer and multiple reader mutually exclusive. If we borrow immutably, ref_1 won't be valid 
+ * anymore.
+ */
+#[test]
+fn foo_06(){
+  let mut i:i32 = 5; //mutable variable
+  //constant reference to a mutable variable. but variable is referred mutably hence reference can change the value of i
+  let ref_1: & mut i32 = & mut i; 
+  println!("{}",ref_1);
+  (*ref_1) = 6; 
+  println!("{}",ref_1);
+  println!("{}",i); //println borrows immutably
+  // once the immutable borrow happens ref_1 becomes invalid because ref_1 borrows immutably
+  //println!("{}",ref_1); 
+  //i=10;
+  //println!("{}",ref_1);
+}
+ ``` 
+
+* Mutable reference to a constant.
+  ```
+  fn foo(){
+    let j:i32=10;
+    let mut ref_1:& i32 = &j; //reference to a constant. reference is mutable. can refer to another variable
+    println!("{}",ref_1);
+    let k:i32 =15;
+    ref_1 = &k;
+    println!("{}",ref_1);
+  }
+  ```  
+
+* Mutable reference to a mutable value
+   ```
+  fn foo(){
+    let mut j:i32=10;
+    let mut ref_1:& mut i32 = & mut j; 
+    println!("{}",ref_1);
+  }
+  ``` 
+* Note : We are going to discuss more on references in "Borrowing" section
+* Points to remember : We can't have & mut v from an immutable v, where v is a variable. But, we can have & v and & mut v from a mut v. Utility API should always accept & mut v, whether v is mut or not.
+  
 ### Ownership in Rust
 Rust approach towards memory safety issue is unique. It comes with a concept of Ownership. The rules of the ownership is quite simple but powerful. It has changed the way I as Java developer think of writing code. These rules are
 * Each value in Rust has an owner.
@@ -106,8 +173,90 @@ fn foo_03(){
   println!("s1:{}",s1);
 }
 ```
-> String in Rust is a struct. Struct gets memory from stack unless until programmer want it in heap. String has a Vec internally. Vec gets its memory from heap      
+> String in Rust is a struct. Struct gets memory from stack unless until programmer want it in heap. String has a Vec internally. Vec gets its memory from heap
 
+* If we perform a deep copy of String by calling clone(), source remain remains valid after the assignment. clone() creates a new memory block in the heap coping entire content from source. Since both memory address are completely different, single owner rules remains valid. But we have to be careful in performing deep copy during runtime. It could impact performance of the application
+```
+//clone() performs deep copy for String implementation. Copies entire content to a new memory location. 
+//Therefore, move doesn't happen for source.
+#[test]
+fn foo_04(){
+  let s1:String = String::from("Hello");
+  let s2:String = s1.clone();
+  println!("s1:{}",s1);
+  println!("s2:{}",s2);
+}
+```  
+### Ownership transfer during method call
+* When a method is called and argument is a reference to a mutable element (either a mutable variable or something similar to String. String is a smart pointer) ownership is transferred to the called function / method parameter. (Note : what is the difference between function parameter and argument). Similarly when a method returns a reference (we can only return reference of Heap allocated memory i.e. smart pointer or reference of static element. why ?? we will discuss in our lifetime section) ownership is transferred. String literal is the only exception. TODO code example
+
+* Imagine we need an utility method to calculate length of String. If we pass the String  smart pointer, the caller is going to loose the ownership. But, as good utility API design, utility API shouldn't ask the caller to loose the ownership. One solution could be deep copy. But deep copy can hurt the performance causing denial of service. Other solution could be return the same smart pointer to the caller which is passed as an argument along with the result of the utility function inside a tuple. This is not a readable solution. The solution is reference of the smart pointer. This called borrow in Rust. 
+
+ ### Borrowing
+ * Let's build our simple utility to calculate length 
+```   
+#[test]
+fn foo_07(){
+  let s:String = String::from("Hello");
+  //ownership of s is transferred to the called method. From this point onwards s is an un initialized state
+  //We can't use s. But the function my_string_len_cal returns the same String which is passed as an argument
+  //and it is assigned to s1. We can use 's1' instead of 's'  
+  let (l,s1) = my_string_len_cal(s); 
+  assert_eq!(l,5);
+  println!("s1:{}",s1);
+}
+fn my_string_len_cal(s:String)->(usize,String){
+  (s.len(), s)
+}      
+```  
+This not a readable code. Can't just return a tuple to implement simple functionality. What's the other approach. Borrow an immutable reference.
+``` 
+fn bar_1(s_ref:&String)->usize{
+  s_ref.len()
+}
+``` 
+* Rust references do not take the ownership. Ownership stays with the variable. Reference simply refer to the value but, doesn't own it.Since the reference doesn't own the variable it points, the value won't be dropped when reference goes out of the scope. Variables are dropped when control goes outside the scope of the variable. Referring a variable through reference without owning it is called "Borrowing"
+  
+* What if we want modify something we borrowed ? & mut v (v is a variable).
+  >& mut v (reference which can mutate the value) has one big restriction : If you have a reference which can change the value, you can not have any other references. Remember the golden rule : Single writer and multiple readers are mutually exclusive. The benefit of having this restriction is that Rust can detect data race condition during compile time.
+  
+  > A data race condition occurs when all of these below occur simultaneously
+  <br>1: Two or more pointers access the same data at same time.
+  <br>2: At least one of the pointer is being used to write the data.
+  <br>3: There no mechanism used to synchronize the access to data. 
+  
+
+``` 
+fn bar(){
+  let mut s:String = String::from("Hello");
+  let r1 = & mut s;
+  let r2 = & mut s;
+  println!("r1:{},r2:{}",r1,r2);
+}
+```
+Above code will not compile. We can not borrow 's' as mutable more than once and keep using them all. We can use only one. Refer below code. Though we have r1 and r2, we just using r1.
+```
+#[test]
+fn bar(){
+  let mut s=String::from("Hello");
+  let r1 = &s;
+  let r2 = &s;
+  println!("{}",r1)
+}
+```
+* We can have multiple immutable references. No issues.
+* We can not have a mutable reference while we have an immutable reference of the same variable. & v and & mut v is mutually exclusive where v is a mutable variable.
+* Dangling references can't be possible. We can not borrow a reference if the variable is dropped. below code will not compile. We are returning &s. When control goes outside of bar(), s is dropped and &s become invalid.
+ ```
+ fn foo(){
+  ler ref_1=bar();
+ }
+ fn bar(){
+  let s = String::from("Hello");
+  return &s; 
+ }
+ ``` 
+ ### Lifetime
 ## Implemented data structures:
 I am going to implement following data structures and algorithms. I won't be explaining those. Code has explanations why it is done that way. I have kept the explanation as simple as possible. Linked list based data structure is a good starting point.
 
