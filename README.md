@@ -50,7 +50,9 @@ int * bar(){
 * Double Free : TODO
   
 ### Reference
-> A reference is like a pointer in that it's an address that can be followed to access the data stored in the address; that data is owned by some other variable i.e. ownership is not transferred. Unlike pointer, a reference is guaranteed to point to a valid value of particular type for the life of the reference. First comes the variable and after that reference. Variable could be a smart pointer; Smart pointer is something which contains a pointer and additional information. For example vector or a string.
+> A reference is like a pointer in that it's an address that can be followed to access the data stored in the address; that data is owned by some other variable i.e. ownership is not transferred. Unlike pointer, a reference is guaranteed to point to a valid value of particular type for the life of the reference. Reference can't live longer than variable. Variable could be a smart pointer
+
+> Smart pointer is something which contains a pointer and additional information. For example vector or a string. Smart pointer wraps the actual pointer something similar to class or struct.
 
 * Constant reference to a constant.  
 ```
@@ -215,7 +217,7 @@ fn bar_1(s_ref:&String)->usize{
   s_ref.len()
 }
 ``` 
-* Rust references do not take the ownership. Ownership stays with the variable. Reference simply refer to the value but, doesn't own it.Since the reference doesn't own the variable it points, the value won't be dropped when reference goes out of the scope. Variables are dropped when control goes outside the scope of the variable. Referring a variable through reference without owning it is called "Borrowing"
+* Rust references do not take the ownership. Ownership stays with the variable. Reference simply refer to the value but, doesn't own it.Since the reference doesn't own the variable it points, the value won't be dropped when reference goes out of the scope. References are valid till variable is not dropped (variables are dropped when control goes outside the scope). Referring a value through reference without owning it is called "Borrowing"
   
 * What if we want modify something we borrowed ? & mut v (v is a variable).
   >& mut v (reference which can mutate the value) has one big restriction : If you have a reference which can change the value, you can not have any other references. Remember the golden rule : Single writer and multiple readers are mutually exclusive. The benefit of having this restriction is that Rust can detect data race condition during compile time.
@@ -243,6 +245,7 @@ fn bar(){
   let r2 = &s;
   println!("{}",r1)
 }
+//Also refer hello_ref::foo_10()
 ```
 * We can have multiple immutable references. No issues.
 * We can not have a mutable reference while we have an immutable reference of the same variable. & v and & mut v is mutually exclusive where v is a mutable variable.
@@ -251,12 +254,75 @@ fn bar(){
  fn foo(){
   ler ref_1=bar();
  }
- fn bar(){
+ fn bar()-> &String{
   let s = String::from("Hello");
   return &s; 
  }
  ``` 
  ### Lifetime
+ * Lifetime is completely a new concept for me. Lifetimes are associated with reference. It tells the Rust compiler what is the maximum life of a reference.
+ * Rule is simple lifetime of reference <= scope of the variable. Because of this principle below code will not compile
+```
+ fn foo(){
+  ler ref_1=bar();
+ }
+ fn bar()->& i32{
+  let i:i32 = 10;
+  return &i; 
+ }
+ ```
+ Compiler trying to know the lifetime of the reference. As we are returning reference of a local variable,compiler is complaining. When control goes outside the scope of bar(), local variables are dropped causing the reference to dangle. Lifetime protects us from creating dangling references
+
+ * What is static lifetime ? Local variable stays as long as control is inside. static variable can stay outside. 
+ ```
+ fn foo(){
+  ler ref_1=bar();
+ }
+ static NUM:i32=13;
+ fn bar()-> & 'static i32{
+  return & NUM; 
+ }
+ ```    
+* Lifetime are what the Rust compiler uses to keep track of how long references are valid. Lifetime helps the borrow checker to ensure that we never going to have invalid references.
+
+* What is borrow checker ? When we create a reference of a variable, we say we borrowed the reference. Borrow checker mechanism keeps track of the reference to determine exactly when drop() should be called to avoid memory safety bugs and memory leaks. Suppose we return reference of a local variable or reference of smart pointer or reference of string literal (recall when we declare string literal it is always a reference) implicit lifetime associated with these reference ends inside function scope. Therefore, we can't access the reference.    
+
+* Every local variable is defined with an implicit lifetime. We can't override the lifetime of reference of local variable. It is a design decision which keeps things clean and simple. Otherwise, Rust programmer would have to chase these lifetime. Imagine a situation we have 10 layers of call stack and each returning different lifetime to the caller.
+
+* Suppose we have a vector and we have some util to populate the vector with String reference as we don't want to own the value. We know variable are dropped as soon as control goes outside the scope of the function. Reference can't live when variable is dropped. But, can we can ask the Rust compiler to keep the reference with for cretin time period by defining lifetime. No !!! A Big no. (or else our lif would be chasing the rabbit hole of reference) Hold on one more point can we pass the vector variable to the called function. We can but we will loos the ownership. Too many stuffs !!! isn't it ?? Below code will not compile.
+
+```
+/**
+ * 
+ */
+#[test]
+fn foo_08(){
+  //Vector accepting list of String reference
+  let mut l: Vec<& String> = Vec::new();
+  bar_08(&mut l);
+
+}
+fn bar_08 <'a> (l:& 'a mut Vec<& 'a String>){
+   let s1:String = String::from("Hello");
+   let s1_ref : & 'a String= 'a & s1; 
+   l.push(s1_ref);
+}
+error[E0597]: `s1` does not live long enough
+   --> src/hello_reference/hello_ref.rs:142:30
+    |
+140 | fn bar_08 <'a> (l:& 'a mut Vec<& 'a String>){
+    |            -- lifetime `'a` defined here
+141 |    let s1:String = String::from("Hello");
+142 |    let s1_ref : & 'a String= &  s1; 
+    |                 -----------  ^^^^^ borrowed value does not live long enough
+    |                 |
+    |                 type annotation requires that `s1` is borrowed for `'a`
+```
+* Is there any way to return reference ? Wrapping it inside a variable. Variable could be a struct or a smart pointer like vector ? No Big No !! No way. Again reiterating things dangling reference is not possible in Rust. We can't trick the compiler. When variable is dead reference can't live. Reference can't outlive the variable. If we think deeply, there is absolutely no use case of such type. If we wish to return a value, return the variable along with ownership.
+
+* Where is the use of lifetime parameter ? When calling a function or method (Not when returning). TODO (In progress)
+
+
 ## Implemented data structures:
 I am going to implement following data structures and algorithms. I won't be explaining those. Code has explanations why it is done that way. I have kept the explanation as simple as possible. Linked list based data structure is a good starting point.
 
