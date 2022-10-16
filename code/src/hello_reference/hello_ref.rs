@@ -53,6 +53,66 @@ fn foo_03(){
 }
 */
 
+//clone() performs deep copy for String implementation. Copies entire content to a new memory location. Therefore, move doesn't happen
+//for source
+#[test]
+fn foo_04(){
+  let s1:String = String::from("Hello");
+  let s2:String = s1.clone();
+  println!("s1:{}",s1);
+  println!("s2:{}",s2);
+}
+/*
+#[test]
+fn foo_05(){
+  let mut i:i32 = 5; //mutable variable
+  //constant reference to a mutable variable. but variable is referred immutably hence reference can't change the value of i
+  let ref_1: & i32 = & i; 
+  println!("{}",ref_1);
+  //variable is referred immutably hence reference can't change the value of i
+  (*ref_1) = 6; //generates compilation error
+}
+*/
+/**
+ * In foo_06() at any point in time, there is always going to single writer. value stored in 'i' can either be changed by
+ * ref_1 or 'i' itself. Single writer and multiple reader mutually exclusive. If we borrow immutably, ref_1 won't be valid 
+ * anymore.
+ */
+#[test]
+fn foo_06(){
+  let mut i:i32 = 5; //mutable variable
+  //constant reference to a mutable variable. but variable is referred mutably hence reference can change the value of i
+  let ref_1: & mut i32 = & mut i; 
+  println!("{}",ref_1);
+  (*ref_1) = 6; 
+  println!("{}",ref_1);
+  println!("{}",i); //println borrows immutably
+  // once the immutable borrow happens ref_1 becomes invalid because ref_1 borrows immutably
+  //println!("{}",ref_1); 
+  //i=10;
+  //println!("{}",ref_1);
+}
+#[test]
+fn foo_07(){
+  let s:String = String::from("Hello");
+  //ownership of s is transferred to the called method. From this point onwards s is an un initialized state
+  //We can't use s. But the function my_string_len_cal returns the same String which is passed as an argument
+  //and it is assigned to s1. We can use 's1' instead of 's'  
+  let (l,s1) = my_string_len_cal(s); 
+  assert_eq!(l,5);
+  println!("s1:{}",s1);
+}
+fn my_string_len_cal(s:String)->(usize,String){
+  (s.len(), s)
+}
+#[test]
+fn bar(){
+  let mut s=String::from("Hello");
+  let r1 = &s;
+  let r2 = &s;
+  println!("{}",r1)
+}
+
 /*
 foo_10 will result compilation error.
 #[test]
