@@ -323,8 +323,6 @@ error[E0597]: `s1` does not live long enough
 * Where is the use of lifetime parameter ? When calling a function or method (Not when returning). TODO (In progress)
 
 
-## Enum in Rust vs Enum in Java
-
 ## Implemented data structures:
 I am going to implement following data structures and algorithms. I won't be explaining those. Code has explanations why it is done that way. I have kept the explanation as simple as possible. Linked list based data structure is a good starting point.
 
