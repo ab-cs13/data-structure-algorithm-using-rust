@@ -114,7 +114,7 @@ fn bar(){
 }
 
 /*
-foo_10 will result compilation error.
+foo_10 will result compilation error. We can't have two '& mut reference' for a variable and keep using them both. 
 #[test]
 fn foo_10(){
     let mut s1:&str = "Hello";
