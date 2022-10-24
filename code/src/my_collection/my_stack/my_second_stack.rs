@@ -20,11 +20,11 @@ struct Node<'n,T>{
 /**
  * A simple stack implementation.
  */
-pub struct MySecondStack<'s,T>{
+pub struct MySecondStack <'s,T>{
     head : Option<Box<Node<'s,T>>>,
 }
 
-impl <'s,T>MySecondStack<'s,T>{
+impl <'s,T> MySecondStack <'s,T>{
     /**
      * Creates an empty stack
      */
@@ -62,7 +62,35 @@ impl <'s,T>MySecondStack<'s,T>{
     /**
      * Returns the element from the head without removing the head.
      */
-    pub fn peek(& self){
-
+    pub fn peek(& self)->Option<& 's T>{
+        if let Option::Some(temp) = & self.head{
+            return Option::Some(temp.data);
+        }
+        Option::None
     }
+}
+
+/*impl  <'s,T> Drop for MySecondStack<'s, T>{
+    fn drop(&mut self) {
+       
+    }
+} */   
+
+#[test]
+pub fn test_push_pop(){
+    let s1:String = String::from("A");
+    let s2:String = String::from("B");
+    let s3:String = String::from("C");
+    let mut stack : MySecondStack<String> = MySecondStack::new();
+    stack.push(& s1);
+    stack.push(& s2);
+    stack.push(& s3);
+
+    assert_eq!(stack.peek().unwrap(),& s3);
+    assert_eq!(stack.pop().unwrap(),& s3);
+    assert_eq!(stack.pop().unwrap(),& s2);
+    assert_eq!(stack.peek().unwrap(),& s1);
+    assert_eq!(stack.pop().unwrap(),& s1);
+    assert_eq!(stack.pop(),Option::None);
+    assert_eq!(stack.peek(),Option::None);
 }

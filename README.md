@@ -317,9 +317,25 @@ error[E0597]: `s1` does not live long enough
     |                 type annotation requires that `s1` is borrowed for `'a`
 ```
 * Is there any way to return reference ? Wrapping it inside a variable. Variable could be a struct or a smart pointer like vector ? No Big No !! No way. Again reiterating things dangling reference is not possible in Rust. We can't trick the compiler. When variable is dead reference can't live. Reference can't outlive the variable. If we think deeply, there is absolutely no use case of such type. If we wish to return a value, return the variable along with ownership.
+  
+* While defining reference of a variable we cannot enforce the reference to have a particular lifetime. Rust doesn't allow references 
+  declared with lifetime. Otherwise, that would be a nightmare for programmer to chase those lifetime to figure out dangling references.
 
-* Where is the use of lifetime parameter ? When calling a function or method (Not when returning). TODO (In progress)
+* The rule is pretty simple 
+>Accept reference as argument and return variable.
 
+* When we define function, method, struct or enum and we want to use reference we can mention lifetime of the reference. In case of struct or enum it tells the compiler what is the lifetime of the reference used inside the struct or enum . 
+```
+struct Foo<'s>{
+  data : & 's String,
+}  
+```
+Here we are saying lifetime of variable of type Foo is less than equal to lifetime of data which is a reference to a String.
+
+
+
+
+## Destructor
 
 ## Implemented data structures:
 I am going to implement following data structures and algorithms. I won't be explaining those. Code has explanations why it is done that way. I have kept the explanation as simple as possible. Linked list based data structure is a good starting point.

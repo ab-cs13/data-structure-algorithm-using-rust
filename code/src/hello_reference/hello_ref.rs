@@ -109,7 +109,7 @@ fn my_string_len_cal(s:String)->(usize,String){
 fn bar(){
   let mut s=String::from("Hello");
   let r1 = &s;
-  let r2 = &s;
+  let _r2 = &s;
   println!("{}",r1)
 }
 

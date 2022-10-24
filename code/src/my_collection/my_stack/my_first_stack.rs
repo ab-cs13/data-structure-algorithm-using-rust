@@ -4,7 +4,7 @@
 //Stack always going to have a head. All push and pop operations are performed at head only.
 
 struct Node<'a, T >{
-    data: & 'a T,
+    data : & 'a T,
     next : NextPtr<'a,T>,
 }
 //Rust doesn't have null. Rust has avoided the billion dollar mistake. We need a marker to indicate the last element of stack. 
@@ -211,7 +211,26 @@ impl <'s,T>MyFirstStack<'s,T>{
             }
         }
     }    
+ /*
+ Interesting one !!! If we observe carefully variable stack of MyFirstStack type is declared after the declaration of all String 
+ variables ?? Otherwise compiler will complain. Why ?? 
+ */   
+//TODO answer the why ??
 #[test]
 fn test_my_first_stack(){
+    let s1:String = String::from("A");
+    let s2:String = String::from("B");
+    let s3:String = String::from("C");
+    let mut stack : MyFirstStack<String> = MyFirstStack::new();
+    let s1_ref : & String = &  s1;
+    let s2_ref : & String = & s2;  
+    let s3_ref : & String = & s3;
+    stack.push(s1_ref);
+    stack.push(s2_ref);
+    stack.push(s3_ref);
 
+    assert_eq!(stack.pop().unwrap(),& s3);
+    assert_eq!(stack.pop().unwrap(),& s2);
+    assert_eq!(stack.pop().unwrap(),& s1);
+    assert_eq!(stack.pop(),Option::None);
 }
