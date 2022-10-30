@@ -153,7 +153,10 @@ fn bar_message(msg:& Message ){
 /*
 -------------------------------------------------------------------
 
-Always pass reference as argument and return variable from function
+Always pass reference as argument and return variable from function.
+But you can always return a reference from a method if data the 
+referred by the reference belongs to struct.
+
 --------------------------------------------------------------------
 
 */
