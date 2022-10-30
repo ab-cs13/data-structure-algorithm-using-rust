@@ -66,15 +66,32 @@ impl <'s,T> MySecondStack <'s,T>{
         if let Option::Some(temp) = & self.head{
             return Option::Some(temp.data);
         }
-        Option::None
+        return Option::None;
     }
 }
 
-/*impl  <'s,T> Drop for MySecondStack<'s, T>{
-    fn drop(&mut self) {
-       
+/*
+Do we need to implement drop trait ? 1st question ? Is all drop call is tail recursive ? lets's see
+When control goes out side the scope,
+1. stack dropped
+2. head dropped : Dropping of head is tail recursive and compiler optimize the tell call. 
+3. head.drop() will call Option<Box<Node>> drop. If None no problem. If not None
+4.Box.drop  
+    i: calls Node.drop (call the )
+    ii: deallocates pointer of   
+
+*/
+
+impl <'s,T> Drop for MySecondStack<'s, T>{
+    fn drop(&mut self){
+        
+        while let Option::Some(mut temp) = std::mem::replace(& mut self.head, Option::None)  {
+            //println!("dropping :{}",& temp.data);
+            self.head = std::mem::replace(& mut temp.next,Option::None);
+            
+        }
     }
-} */   
+}
 
 #[test]
 pub fn test_push_pop(){

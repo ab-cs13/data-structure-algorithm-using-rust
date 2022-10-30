@@ -64,13 +64,12 @@ impl <'s,T>MyFirstStack<'s,T>{
      // If we perform step 1, head will be uninitialized and this is not allowed. Therefore we have to use std::mem::replace
      // to put some temp element in head
      let temp_node = std::mem::replace(& mut self.head, NextPtr::EMPTY);
-     match temp_node{
-        NextPtr::EMPTY => Option::None,
-        NextPtr::NONEMPTY(next_element)=>{
-            self.head = next_element.next;
-            Option::Some(next_element.data)    
-        }
+     if let NextPtr::NONEMPTY( temp_next) =  temp_node{
+        let return_data = temp_next.data;
+        self.head = temp_next.next;
+        return Option::Some(return_data);
      }
+     return Option::None;
     }
 }
 
