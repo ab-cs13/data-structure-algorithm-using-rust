@@ -66,6 +66,15 @@ impl StringStack{
 
 }
 
+impl Drop for StringStack{
+    fn drop(&mut self) {
+        while let Option::Some(mut temp_head) = std::mem::replace(& mut self.head, Option::None){
+            println!("dropping {}",& temp_head.data);
+            self.head = std::mem::replace(& mut temp_head.next, Option::None);
+        }
+    }
+}
+
 impl<'s> Iterator for StringStackIter<'s>{
     type Item = & 's String;
 
