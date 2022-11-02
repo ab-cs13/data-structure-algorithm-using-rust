@@ -163,8 +163,10 @@ impl MyDLL{
     fn iter_from_front(& self)->IterFromFront{
         return IterFromFront { cur_ptr: self.head.clone() };
     }
-
-    fn delete(& mut self,index:i32){
+    /**
+     * Deletes a node with respect to specified index and returns the data of deleted node.
+     */
+    fn delete(& mut self,index:i32)->i32{
         if index < 0{
             panic!("supplied index is negative");
         }else if index >= self.size {
@@ -173,17 +175,26 @@ impl MyDLL{
             let ret_val:i32 = self.head.as_ref().unwrap().borrow().data;
             self.head = Option::None;
             self.tail = Option::None;
-            //return ret_val; 
+            return ret_val; 
         }else{
             let mut temp = self.head.clone(); 
             let mut i : i32 = 0;
-            while i < index-1{
+            while i < index{
                 let temp_1 = temp.clone();
-                //let k=temp_1.;
                 temp = temp_1.unwrap().borrow().next.clone();
                 i=i+1;
-            }
+            } // when we exit temp -> node to delete
 
+            //temp.prev.next = temp.next therefore temp.prev has to be borrowed mutably
+            temp.clone().unwrap().borrow().prev.clone().unwrap().borrow_mut().next = temp.clone().unwrap().borrow().next.clone();
+           //temp.next.prev = temp.prev
+            temp.clone().unwrap().borrow().next.clone().unwrap().borrow_mut().prev = temp.clone().unwrap().borrow().prev.clone();
+            //temp.prev = null
+            temp.clone().unwrap().borrow_mut().prev = Option::None;
+            //temp.next = null
+            temp.clone().unwrap().borrow_mut().next = Option::None;
+            let ret_val= temp.as_ref().unwrap().borrow().data;
+            return ret_val;
             
         } 
     }
