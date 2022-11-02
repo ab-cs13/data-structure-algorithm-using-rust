@@ -155,7 +155,9 @@ fn bar_message(msg:& Message ){
 
 Always pass reference as argument and return variable from function.
 But you can always return a reference from a method if data the 
-referred by the reference belongs to struct.
+referred by the reference belongs to struct. The single factor always
+need to be considered while returning reference "Rust never allows 
+dangling references."
 
 --------------------------------------------------------------------
 

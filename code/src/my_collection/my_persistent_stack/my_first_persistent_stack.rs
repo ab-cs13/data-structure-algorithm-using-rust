@@ -99,7 +99,7 @@ impl <'i> Iterator for MyPersistentStackIter<'i>{
     fn next(&mut self) -> Option<Self::Item> {
         if let Option::Some( cur) = std::mem::replace(& mut self.cur_ptr, Option::None){
             let ret_val = Option::Some(cur.data);
-            self.cur_ptr = cur.next.as_ref();
+            self.cur_ptr = cur.next.as_ref(); //we can use & too &cur.next
             return ret_val;
         }else{
             return Option::None;
