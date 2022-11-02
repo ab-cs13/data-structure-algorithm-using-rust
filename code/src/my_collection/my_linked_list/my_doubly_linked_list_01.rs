@@ -265,3 +265,22 @@ fn test_add_at(){
       i = i+1;
     } 
 }
+#[test]
+fn test_delete(){
+    let mut ll:MyDLL = MyDLL::new();
+    
+    ll.append(0);
+    ll.append(1);
+    ll.append(2);
+    ll.append(23);
+    ll.append(3);
+    let i:i32=ll.delete(3);
+    assert_eq!(23,i);
+    let mut it:IterFromFront = ll.iter_from_front();
+  
+    let mut i:i32 = 0;
+    while let Option::Some(element) = it.next(){
+      assert_eq!(i,element);
+      i = i+1;
+    } 
+}
