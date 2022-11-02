@@ -138,7 +138,7 @@ impl MyDLL{
         }
         else{
             //The clone method of Rc increases the reference count 
-            let mut temp = self.head.as_ref().unwrap().clone(); // pointed to head
+            let mut temp = self.head.clone().unwrap(); // pointed to head
             let mut i:i32 = 0;
             //we need to loop till (position-1)th place
             while i < position-1{
@@ -162,6 +162,30 @@ impl MyDLL{
     }
     fn iter_from_front(& self)->IterFromFront{
         return IterFromFront { cur_ptr: self.head.clone() };
+    }
+
+    fn delete(& mut self,index:i32){
+        if index < 0{
+            panic!("supplied index is negative");
+        }else if index >= self.size {
+            panic!("Out of bound index. index:{}, size:{}",index, self.size);
+        }else if self.size == 0{
+            let ret_val:i32 = self.head.as_ref().unwrap().borrow().data;
+            self.head = Option::None;
+            self.tail = Option::None;
+            //return ret_val; 
+        }else{
+            let mut temp = self.head.clone(); 
+            let mut i : i32 = 0;
+            while i < index-1{
+                let temp_1 = temp.clone();
+                //let k=temp_1.;
+                temp = temp_1.unwrap().borrow().next.clone();
+                i=i+1;
+            }
+
+            
+        } 
     }
 }
 
