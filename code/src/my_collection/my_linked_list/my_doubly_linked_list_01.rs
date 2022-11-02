@@ -40,9 +40,21 @@ requirement to mutate the inner content of head. But, this logic won't work for 
 Because we have to mutate the 'next' and 'prev' pointers which are the inner content of head and tails.
 
 That's why we need 'RefCell smart pointer' which will allow us to mutate the inner content. This our 3rd tool
+RefCell follow the same principle:
+single and multiple readers are exclusive to each other. But, the principle is che ked during runtime rather than
+compile time. And if rule is breached, program panics during runtime. 
 -------------------------------------------------------------------------------------------------------------
 
-I hope with these tools we can create a basic doubly linked list. Let's give it a go
+I hope with these tools we can create a basic doubly linked list. Let's give it a go. 
+
+Another most important tool that is going to help us a lot is the clone() method of Rc smart pointer. When we invoke the
+clone method Rc creates a new pointer in stack which holds the address of the heap allocation and increases the reference 
+count of. when the pointer goes out of scope, the reference count is decreased. When reference count becomes zero, the 
+heap content is dropped.
+
+Clone method of Option. When we call the clone method method of Option, the clone of the content is called and wrapped
+inside Option and returned to the caller.
+
    
 
  

@@ -322,7 +322,7 @@ error[E0597]: `s1` does not live long enough
   declared with lifetime. Otherwise, that would be a nightmare for programmer to chase those lifetime to figure out dangling references.
 
 * The rule is pretty simple 
->Accept reference as argument and return variable.
+>Always pass reference as argument and return variable from function.But you can always return a reference from a method if data the referred by the reference belongs to struct. The single factor always need to be considered while returning reference "Rust never allows dangling references."
 
 * When we define function, method, struct or enum and we want to use reference we can mention lifetime of the reference. In case of struct or enum it tells the compiler what is the lifetime of the reference used inside the struct or enum . 
 ```
@@ -332,8 +332,26 @@ struct Foo<'s>{
 ```
 Here we are saying lifetime of variable of type Foo is less than equal to lifetime of data which is a reference to a String.
 
+* Rc and Box : Rc and Box are smart pointers to allocate memory from heap. Rc stand for reference counted. When we use Rc, Rc keeps track of pointer holding the address of the memory location allocated from the heap for the same Rc pointer. Box is equivalent to new operator in Java. More detailed documentation is there in Rust docs. When I start using these two smart pointers (and their siblings; they have siblings too) I must admit I got confused because in Java, we do <br>
+ ```
+ public class User{
+  String name;
+ }
+ User user = new User();
+ user.name = "ab";
+ System.out.println(user.name);
+ ``` 
+ the new operator return type is the Object itself for which it is invoked. Reading and writing is done jst through the reference. Now let's see its equivalent in Rust <br>
+ ```
+pub struct User{
+  name : String
+}
 
-
+let mut user : Box<User> = Box::new(User{name : String::from("cd")});
+user.name = "ab"
+println!("{}",user.name);
+```
+For me in Rust the type of user variable is bit unreadable initially. Perhaps due to my experience with Java. treat Box, Rc and its siblings as new operator in java. These smart pointer gives direct access to the type they wrap.
 
 ## Destructor
 
