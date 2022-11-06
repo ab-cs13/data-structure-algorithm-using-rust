@@ -52,20 +52,22 @@ impl MyFirstUnsafeQueue{
      * Adds an element at the rear of the queue
      */
     fn push(& mut self, element:i32){
-        let mut new_node = Box::new(Node{
+        unsafe{
+        let mut new_node = Box::into_raw(Box::new(Node{
             data :element,
             next : std::ptr::null_mut(),
-        });
+        }));
         if self.head.is_null(){
             //https://doc.rust-lang.org/std/primitive.pointer.html#common-ways-to-create-raw-pointers 
-            self.head = & mut * new_node;
-            self.tail = & mut * new_node;
+            self.head = new_node;
+            self.tail = new_node;
         }else{
-            unsafe{
-                (*self.tail).next = & mut *new_node;
-                self.tail = & mut * new_node;
-            }
+            
+                (*self.tail).next = new_node;
+                self.tail = new_node;
+            
         }
+    }
     }
     /**
      * Removes the element from head and returns the data
@@ -132,17 +134,19 @@ An experimental interpreter for Rust's mid-level intermediate representation (MI
 */
 #[test]
 fn test_1(){
+    unsafe{
    let mut q:MyFirstUnsafeQueue = MyFirstUnsafeQueue::new();
    q.push(1);
+   assert_eq!(1, (*q.head).data);
+   assert_eq!(1, (*q.tail).data);
    q.push(2);
-   q.push(3);
+   assert_eq!(1, (*q.head).data);
+   assert_eq!(2, (*q.tail).data);
 
    let mut iter = q.iter();
    
-   let mut i:i32 =1;
-   while let Option::Some(x)=iter.next(){
-    assert_eq!(i,x);
-    i=i+1;
+   
+   
    }
 
 }
