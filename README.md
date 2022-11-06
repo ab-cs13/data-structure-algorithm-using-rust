@@ -5,7 +5,7 @@ To learn a language: implement data structures. Rust is no exception. But, we ne
 > Hey, Rust's docs is incredibly awesome. https://doc.rust-lang.org/std/
 
 ## <b> Rust References </b>
-Here I try my best to come up with missing pieces of programming fundamentals unknown to programmer (java programmers :) ) In java like programming language we rarely care about memory management. Most memory management related task is taken care by garbage collector. Garbage collector frees the memory when it runs. But, Rust approach is unique. With ownership borrow concept, Rust able to determine exact points where drop / free can be called.
+Here I try my best to come up with missing pieces of programming fundamentals unknown to programmer (java programmers like me :) ) In java like programming language we rarely care about memory management. Most memory management related task is taken care by garbage collector. Garbage collector frees the memory when it runs. But, Rust approach is unique. With ownership borrow concept, Rust able to determine exact points where drop / free can be called.
 
 ### Fundamentals Of Memory Allocation: 
 Stack and Heap : Both stack and heaps are parts of memory available to program to use during runtime. If the size of the data is known during compile time, memory is allocated from stack. If size of the data is unknown during compile time it is preferred (In C we can allocate memory from stack using alloc system call !!! )  to allocate memory from heap and starting address of heap memory is returned as pointer which stays in stack memory. It is really  easy to manage memory allocated from stack. When control goes outside the scope of 
@@ -47,7 +47,7 @@ int * bar(){
   return &i; // i reclaimed at this point. Therefore &i is a dangling pointer
 }
 ```
-* Double Free : TODO
+* Double Free : A double free leads to undefined behavior. This means that the program can behave completely arbitrarily and all bets are off about what happens. That's certainly a bad thing to have happen! In practice, double-freeing a block of memory will corrupt the state of the memory manager, which might cause existing blocks of memory to get corrupted or for future allocations to fail in bizarre ways (for example, the same memory getting handed out on two different successive calls of malloc).Double frees can happen in all sorts of cases. A fairly common one is when multiple different pointers holding the address of the same memory location and more than one pointer calls free at different point of time.
   
 ### Reference
 > A reference is like a pointer in that it's an address that can be followed to access the data stored in the address; that data is owned by some other variable i.e. ownership is not transferred. Unlike pointer, a reference is guaranteed to point to a valid value of particular type for the life of the reference. Reference can't live longer than variable. Variable could be a smart pointer
@@ -219,7 +219,7 @@ fn bar_1(s_ref:&String)->usize{
 ``` 
 * Rust references do not take the ownership. Ownership stays with the variable. Reference simply refer to the value but, doesn't own it.Since the reference doesn't own the variable it points, the value won't be dropped when reference goes out of the scope. References are valid till variable is not dropped (variables are dropped when control goes outside the scope). Referring a value through reference without owning it is called "Borrowing"
   
-* What if we want modify something we borrowed ? & mut v (v is a variable).
+* What if we want modify something we borrowed ? & mut v (v is a mutable variable i.e. mut v).
   >& mut v (reference which can mutate the value) has one big restriction : If you have a reference which can change the value, you can not have any other references. Remember the golden rule : Single writer and multiple readers are mutually exclusive. The benefit of having this restriction is that Rust can detect data race condition during compile time.
   
   > A data race condition occurs when all of these below occur simultaneously
@@ -320,11 +320,10 @@ error[E0597]: `s1` does not live long enough
 ```
 * Is there any way to return reference ? Wrapping it inside a variable. Variable could be a struct or a smart pointer like vector ? No Big No !! No way. Again reiterating things dangling reference is not possible in Rust. We can't trick the compiler. When variable is dead reference can't live. Reference can't outlive the variable. If we think deeply, there is absolutely no use case of such type. If we wish to return a value, return the variable along with ownership.
   
-* While defining reference of a variable we cannot enforce the reference to have a particular lifetime. Rust doesn't allow references 
-  declared with lifetime. Otherwise, that would be a nightmare for programmer to chase those lifetime to figure out dangling references.
+* While defining reference of a variable we cannot enforce the reference to have a particular lifetime. Rust doesn't allow references declared with lifetime. Otherwise, that would be a nightmare for programmer to chase those lifetime to figure out dangling references.
 
 * The rule is pretty simple 
->Always pass reference as argument and return variable from function.But you can always return a reference from a method if data the referred by the reference belongs to struct. The single factor always need to be considered while returning reference "Rust never allows dangling references."
+>Always pass reference as argument and return variable from function.But you can always return a reference from a method if data the referred by the reference belongs to struct. The single factor always need to be considered while returning reference "Rust never allows dangling references." We can keep a reference of a variable as an attribute in struct. The lifetime of such reference must be grater than equal to the lifetime of struct variable. The lifetime of reference strictly follow the stack. If lifetime of reference 'r1' pushed to the stack before the struct variable 's' 's' can access 'r1'. The stack principle is not just for lifetime or refer 
 
 * When we define function, method, struct or enum and we want to use reference we can mention lifetime of the reference. In case of struct or enum it tells the compiler what is the lifetime of the reference used inside the struct or enum . 
 ```
@@ -355,7 +354,32 @@ println!("{}",user.name);
 ```
 For me in Rust the type of user variable is bit unreadable initially. Perhaps due to my experience with Java. treat Box, Rc and its siblings as new operator in java. These smart pointer gives direct access to the type they wrap.
 
-## Destructor
+## A closer look on Box, Rc and RefCell
+Box is a pointer to heap. In Rust we don't have null, therefore the Box pointer is kept inside Option. Option enum keeps the pointer. The type of next is not readable when compare it to C or Java. Box is same as new in Java. new has return value of class it self but, Box has type Box<T> but using the variable of Box<T> we can access attributes of T 
+```    
+struct Node{
+    data : i32,
+    next : Option<Box<Node>>,
+}
+```
+In linked list tail and previous node of tail points to the same memory address. Box won't allow multiple reference holding same memory location. When the size of the queue will be 1, both head and tail point to the same memory location. During push tails will try to append new node and during pop head will try to remove node from head. To design the queue our only option is Option<Rc<RefCell<Node>>>. Another problem with blow structure is interior mutability. When we add a new node at the rear end we need to update the next pointer of tail. But, incase stack next pointer of new node holds the address of head and address of head is always known value while setting value new node.
+
+```
+struct MyUnsafeQueue{
+    head : Option<Box<Node>>,  
+    tail : Option<Box<Node>> 
+}
+```
+
+Note  : Option<Box<Node>> will work if an only if addition and deletion happens either at front or rear. And the data structure
+can only keep that pointer. For example stack. In case of stack, push and pop happens at head and we just need to keep the pointer
+of head
+```
+Stack{
+    head : Option<Box<Node>>
+}
+```
+## Destructor (TODO)
 
 ## Implemented data structures:
 I am going to implement following data structures and algorithms. I won't be explaining those. Code has explanations why it is done that way. I have kept the explanation as simple as possible. Linked list based data structure is a good starting point.
@@ -367,3 +391,74 @@ I am going to implement following data structures and algorithms. I won't be exp
 * my_persistent_stack
 * my_linked_list
 
+## Raw pointers and Unsafe Rust 
+Unsafe Rust exists because, by nature, static analysis is conservative. When the compiler tries to determine whether or not code upholds the guarantees, it’s better for it to reject some valid programs than to accept some invalid programs. Although the code might be okay, if the Rust compiler doesn’t have enough information to be confident, it will reject the code. In these cases, you can use unsafe code to tell the compiler, “Trust me, I know what I’m doing.” Be warned, however, that you use unsafe Rust at your own risk: if you use unsafe code incorrectly, problems can occur due to memory unsafety, such as null pointer dereferencing.Rust needs to allow  to do low-level systems programming, such as directly interacting with the operating system or even writing  own operating system. 
+
+* Raw pointers can either be mutable or immutable which is similar to C pointers and pointers to constant respectively  
+```
+let mut num = 5;
+let r1 = &num as *const i32; 
+let r2 = &mut num as *mut i32;
+```
+'r1' declared as pointer to constant. since num is mutable we can either have a mutable pointer or pointer to a constant. To define raw pointers unsafe block is not required 
+> We can't have a mutable raw pointer '&mut num as *mut' from a immutable variable. Exactly same as reference. We can't have a '& mut' from immutable variable.
+
+* We can create a raw pointer from any arbitrary memory location
+```
+fn main() {
+    let address = 0x012345usize;
+    let r = address as *const i32;
+}
+```
+* Unsafe block allows dereference a raw pointer. Creating a pointer does no harm; it’s only when we try to access the value that it points at that we might end up dealing with an invalid value. 
+```
+fn main() {
+    let mut num = 5;
+
+    let r1 = &num as *const i32;
+    let r2 = &mut num as *mut i32;
+
+    unsafe {
+        println!("r1 is: {}", *r1);
+        println!("r2 is: {}", *r2);
+    }
+}
+/*
+Below code will not compile.
+*/
+fn main() {
+    let mut num = 5;
+    let r1 = & num;
+    let r2 = & mut num;
+    
+    println!("{}",r1);
+    println!("{}",r2);
+}
+
+```
+> Note we have created *const i32 and *mut i32 raw pointers that both pointed to the same memory location, where num is stored. If we instead tried to create an immutable and a mutable reference to num, the code would not have compiled because Rust’s ownership rules don’t allow a mutable reference at the same time as any immutable references. With raw pointers, we can create a mutable pointer and an immutable pointer to the same location and change data through the mutable pointer, potentially creating a data race. Be careful!   
+
+* We can have multiple mutable raw pointer. This is not possible with reference
+ ```
+ fn main() {
+    let mut num = 5;
+    let r1 = &mut num as *mut i32;
+    let r2 = &mut num as *mut i32;
+    unsafe{
+    println!("{}",*r1);
+    println!("{}",*r2);
+    }
+}
+``` 
+Refer hello_unsafe module in src to find more details. I have created a single linked list using raw pointers. 
+
+* Places where unsafe code is the only way
+  <br>1: Dereference a raw pointer (already discussed)
+  <br>2: Call an unsafe function or method
+  <br>3: Access or modify a mutable static variable
+  <br>4: Implement an unsafe trait
+  <br>5: Access fields of unions (to access C union)
+
+## Reference
+* https://doc.rust-lang.org/nightly/nomicon/intro.html 
+* https://rust-unofficial.github.io/too-many-lists/index.html

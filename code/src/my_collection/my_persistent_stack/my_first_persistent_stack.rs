@@ -34,17 +34,17 @@ use std::rc::Rc;
   next : Option<Rc<Node<'s>>>,
 }
 
-pub struct MyFirstPersistentStack<'s>{
+struct MyFirstPersistentStack<'s>{
   head : Option<Rc<Node<'s>>>
 }
 
 impl <'s>MyFirstPersistentStack<'s> {
 
-    pub fn new()->Self{
+    fn new()->Self{
         return MyFirstPersistentStack { head: Option::None };
     }
 
-    pub fn head(& self)->Option<& 's String>{
+    fn head(& self)->Option<& 's String>{
         // we can if let Option::Some(cur_head) = & self.head
         // but we can't doe ' if let Option::Some(cur_head) = self.head '. This is because
         // head would be uninitialized and ownership is transferred to cur_head if we do that.  
@@ -54,7 +54,7 @@ impl <'s>MyFirstPersistentStack<'s> {
             return Option::None;
         }
     }
-    pub fn prepend(& self, element : & 's String)->MyFirstPersistentStack<'s>{
+    fn prepend(& self, element : & 's String)->MyFirstPersistentStack<'s>{
         let new_node:Node<'s> = Node{
             data : element,
             next : self.head.clone(),
@@ -63,7 +63,7 @@ impl <'s>MyFirstPersistentStack<'s> {
         return new_stack;
     }
 
-    pub fn tail(& self)->MyFirstPersistentStack<'s>{
+    fn tail(& self)->MyFirstPersistentStack<'s>{
         let temp = self.head.as_ref();
         if let Option::Some(next_temp) = temp{
             let new_stack : MyFirstPersistentStack<'s> = MyFirstPersistentStack { 
@@ -89,7 +89,7 @@ In Java, a Iterator interface is implemented in a static inner class.
 */
 
 //java equivalent of static inner class. next implement the iterator trait
-pub struct MyPersistentStackIter<'i>{
+struct MyPersistentStackIter<'i>{
  cur_ptr : Option<& 'i Rc<Node<'i>>>
 }
 
@@ -108,7 +108,7 @@ impl <'i> Iterator for MyPersistentStackIter<'i>{
 }
 
 #[test]
-pub fn test_prepend(){
+fn test_prepend(){
     let s1:String = String::from("A");
     let s2:String = String::from("B");
 

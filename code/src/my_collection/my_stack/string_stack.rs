@@ -7,7 +7,7 @@ struct Node{
     data : String,
     next : Option<Box<Node>>
 }
-pub struct StringStack{
+struct StringStack{
     head : Option<Box<Node>>
 }
 
@@ -16,19 +16,19 @@ pub struct StringStack{
   mechanism. Either we can change our StringStack struct template or we need a wrapper. For wrapper is the only
   solution because we can't return the String we have to return '& String' 
  */
-pub struct StringStackIter<'s>{
+struct StringStackIter<'s>{
     //we need to have the reference
     node_ptr: & 's Option<Box<Node>>, 
 }
 
 impl StringStack{
-    pub fn new()->Self{
+    fn new()->Self{
         return StringStack { head: Option::None };
     }
     /**
      * Push the string to the stack
      */
-    pub fn push(& mut self, input:String){
+    fn push(& mut self, input:String){
       let current_head : Option<Box<Node>> = std::mem::replace(& mut self.head, Option::None);
       let new_node : Node = Node { data: input, next: current_head };
       self.head = Option::Some(Box::new(new_node));  
@@ -37,7 +37,7 @@ impl StringStack{
     /**
      * Pops the String there in the top of the stack. If empty returns None
      */
-     pub fn pop(& mut self)->Option<String>{
+    fn pop(& mut self)->Option<String>{
         let  current_head : Option<Box<Node>> = std::mem::replace(& mut self.head,Option::None);
         if let Option::Some(mut temp) = current_head{
            self.head = std::mem::replace(& mut temp.next,Option::None);
@@ -51,7 +51,7 @@ impl StringStack{
       */
       //We don't want to return the element. We are retuning the reference to avoid move.
 
-      pub fn peek(& self)->Option<& String>{
+    fn peek(& self)->Option<& String>{
         // Note the use of 'if let' with respect to reference. Compiler is really smart. 
         if let Option::Some(cur_head) = & self.head{
             return Option::Some(& cur_head.data);
@@ -90,7 +90,7 @@ impl<'s> Iterator for StringStackIter<'s>{
 }
 
 #[test]
-pub fn test_string_stack(){
+fn test_string_stack(){
     let mut string_stack : StringStack = StringStack::new();
     string_stack.push(String::from("A")); 
     string_stack.push(String::from("B"));
