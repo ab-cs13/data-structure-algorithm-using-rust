@@ -33,6 +33,83 @@ Stack{
 
 */  
 
+struct Node{
+    data : i32,
+    //Note : we don't need unsafe block to declare raw pointer. It is only required during dereferencing
+    next : * mut Node,
+}
+
+struct MyFirstUnsafeQueue{
+    head : * mut Node,
+    tail : * mut Node,
+    //Well, two mutable raw pointers are allowed but this won't be 
+}
+impl MyFirstUnsafeQueue{
+    fn new()->Self{
+        return MyFirstUnsafeQueue { head: std::ptr::null_mut(), tail: std::ptr::null_mut() };
+    }
+    /**
+     * Adds an element at the rear of the queue
+     */
+    fn push(& mut self, element:i32){
+        let mut new_node = Box::new(Node{
+            data :element,
+            next : std::ptr::null_mut(),
+        });
+        if self.head.is_null(){
+            //https://doc.rust-lang.org/std/primitive.pointer.html#common-ways-to-create-raw-pointers 
+            self.head = & mut * new_node;
+            self.tail = & mut * new_node;
+        }else{
+            unsafe{
+                (*self.tail).next = & mut *new_node;
+                self.tail = & mut * new_node;
+            }
+        }
+    }
+    /**
+     * Removes the element from head and returns the data
+     */
+    fn pop(& mut self)->Option<i32>{
+        if self.head.is_null(){
+            return Option::None;
+        }else{
+            unsafe{
+                let ret_val : i32 = (*self.head).data;
+                self.head = (*self.head).next;
+                if self.head.is_null(){
+                    self.tail = std::ptr::null_mut();
+                }
+
+                return Option::Some(ret_val);
+            }
+        }
+    }
+
+    fn iter(& self)->Iter{
+        return Iter { ptr: self.head };
+    }
+}
+
+struct Iter{
+    ptr : * const Node,
+}
+
+impl Iterator for Iter{
+    type Item = i32;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if !self.ptr.is_null(){
+            unsafe{
+            let ret_val : i32 = (*self.ptr).data;
+            self.ptr = (*self.ptr).next;    
+            return Option::Some(ret_val);
+            }
+        }else{
+            return Option::None;
+        }
+    }
+}
 /*
 mid-level intermediate representation interpreter (MIRI)
 
@@ -53,3 +130,19 @@ An experimental interpreter for Rust's mid-level intermediate representation (MI
     However, be aware that Miri will not catch all cases of undefined behavior in your program, and cannot run all programs
 
 */
+#[test]
+fn test_1(){
+   let mut q:MyFirstUnsafeQueue = MyFirstUnsafeQueue::new();
+   q.push(1);
+   q.push(2);
+   q.push(3);
+
+   let mut iter = q.iter();
+   
+   let mut i:i32 =1;
+   while let Option::Some(x)=iter.next(){
+    assert_eq!(i,x);
+    i=i+1;
+   }
+
+}
