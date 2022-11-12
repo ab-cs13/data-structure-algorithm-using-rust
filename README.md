@@ -5,7 +5,7 @@ To learn a language: implement data structures. Rust is no exception. But, we ne
 > Hey, Rust's docs is incredibly awesome. https://doc.rust-lang.org/std/
 
 ## <b> Rust References </b>
-Here I try my best to come up with missing pieces of programming fundamentals unknown to programmer (java programmers like me :) ) In java like programming language we rarely care about memory management. Most memory management related task is taken care by garbage collector. Garbage collector frees the memory when it runs. But, Rust approach is unique. With ownership borrow concept, Rust able to determine exact points where drop / free can be called.
+Here I try my best to come up with missing pieces of programming fundamentals unknown to programmer (java programmers like me :) ) In java like programming language we rarely care about memory management. Most memory management related task is taken care by garbage collector. Garbage collector frees the memory when it runs. But, Rust's approach is unique. With ownership borrow concept, Rust able to determine exact points where drop / free can be called.
 
 ### Fundamentals Of Memory Allocation: 
 Stack and Heap : Both stack and heaps are parts of memory available to program to use during runtime. If the size of the data is known during compile time, memory is allocated from stack. If size of the data is unknown during compile time it is preferred (In C we can allocate memory from stack using alloc system call !!! )  to allocate memory from heap and starting address of heap memory is returned as pointer which stays in stack memory. It is really  easy to manage memory allocated from stack. When control goes outside the scope of 
