@@ -1,4 +1,4 @@
-use std::{rc::Rc, cell::RefCell,};
+use std::{rc::Rc, cell::RefCell};
 
 struct Node<'a, T>{
     data : & 'a T,
@@ -31,14 +31,119 @@ impl <'l,T> MyFirstSinglyLL<'l,T>{
         }
     }
 
-    fn mut_iterator(& 'l mut self)->MutItertor<'l,T>{
-        return MutItertor { cur_ptr: self.head.clone(), prev_ptr: Option::None, the_ll: self }
+    fn mut_iterator(& 'l mut self)->MutIterator<'l,T>{
+        return MutIterator { cur_ptr: self.head.clone(), prev_ptr: Option::None, ll: self }
     }
 
 }
 
-struct MutItertor<'i,T>{
+struct MutIterator<'i,T>{
     cur_ptr : Option<Rc<RefCell<Node<'i,T>>>>,
     prev_ptr : Option<Rc<RefCell<Node<'i,T>>>>,
-    the_ll : & 'i mut MyFirstSinglyLL<'i,T>
+    ll : & 'i mut MyFirstSinglyLL<'i,T>
+}
+
+
+impl<'i,T> Iterator for MutIterator<'i,T>{
+    type Item = & 'i T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.cur_ptr.is_none(){
+            return Option::None;
+        }else{
+            let ret_val = self.cur_ptr.as_ref().unwrap().borrow().data;
+            self.prev_ptr = self.cur_ptr.clone();
+            self.cur_ptr = self.prev_ptr.as_ref().unwrap().borrow().next.clone();
+            return Option::Some(ret_val);
+        }
+    }
+
+}
+impl <'i,T> MutIterator<'i,T>{
+    
+    /**
+     * put the element in the current position and push the current element to the next position
+     */
+    fn put(& mut self, element:&'i T){
+        let new_node  = Rc::new(RefCell::new(Node{
+            data : element,
+            next : Option::None,
+        }));
+        if self.prev_ptr.is_none(){
+            //next ptr is at head.
+            if self.cur_ptr.is_none(){
+                //linked list is empty
+                self.ll.head = Option::Some(new_node.clone());
+                self.ll.tail = Option::Some(new_node.clone());
+                self.cur_ptr = Option::Some(new_node.clone());
+            }else{
+                //linked list has some element. We don't need to update the tail
+                new_node.borrow_mut().next = self.ll.head.clone();
+                self.ll.head = Option::Some(new_node.clone());
+                self.cur_ptr = Option::Some(new_node.clone());
+            }
+        }else{
+            if self.cur_ptr.as_ref().unwrap().borrow().next.is_none(){ //Adding at tail
+                self.cur_ptr.as_ref().unwrap().borrow_mut().next = Option::Some(new_node.clone());
+                self.ll.tail = Option::Some(new_node.clone());
+                self.prev_ptr = self.cur_ptr.clone();
+                self.cur_ptr = Option::Some(new_node.clone());
+            }else{
+                //At any position other than head and tail
+                new_node.borrow_mut().next = self.cur_ptr.clone();
+                self.prev_ptr.as_ref().unwrap().borrow_mut().next = Option::Some(new_node.clone()); 
+            }
+        }
+    }
+    /**
+     * Deletes the current element. 
+     */
+    fn delete(& mut self)->Option<& 'i T>{
+    
+        if self.cur_ptr.is_none(){
+            //if linked list is empty
+           return Option::None;
+        }else {
+            let ret_val = self.cur_ptr.as_ref().unwrap().borrow().data;
+            if self.prev_ptr.is_none(){
+                //head node
+                if self.cur_ptr.as_ref().unwrap().borrow().next.is_none(){
+                    //Only one node
+                    self.cur_ptr = Option::None;
+                    self.ll.head = Option::None;
+                    self.ll.tail = Option::None;
+                }else{
+                    let new_head = self.cur_ptr.as_ref().unwrap().borrow().next.clone();
+                    self.cur_ptr = new_head.clone();
+                    self.ll.head = new_head.clone();
+                }
+               
+            }else{
+                self.prev_ptr.as_ref().unwrap().borrow_mut().next = self.cur_ptr.as_ref().unwrap().borrow().next.clone();
+                self.cur_ptr = self.prev_ptr.as_ref().unwrap().borrow().next.clone();
+
+            }
+            return Option::Some(ret_val);
+
+        }
+        
+        
+    }
+}
+
+#[test]
+fn should_create_ll(){
+   let s1: &String = & String::from("A");
+   let s2: &String = & String::from("B");
+   let s3: &String = & String::from("C");
+   let mut ll : MyFirstSinglyLL<String> = MyFirstSinglyLL ::new();
+   ll.append( s1);
+   ll.append( s2);
+   ll.append( s3);
+
+   let mut it:MutIterator<String> = ll.mut_iterator();
+   let e1 = it.next().unwrap();
+   assert_eq!(s1,e1);
+   assert_eq!(s2,it.next().unwrap());
+   assert_eq!(s3,it.next().unwrap());
 }
