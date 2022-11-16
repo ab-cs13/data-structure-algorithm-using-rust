@@ -83,10 +83,10 @@ impl <'i,T> MutIterator<'i,T>{
                 self.cur_ptr = Option::Some(new_node.clone());
             }
         }else{
-            if self.cur_ptr.as_ref().unwrap().borrow().next.is_none(){ //Adding at tail
-                self.cur_ptr.as_ref().unwrap().borrow_mut().next = Option::Some(new_node.clone());
+            if self.cur_ptr.as_ref().is_none(){ //Adding at tail
+                //self.cur_ptr.as_ref().unwrap().borrow_mut().next = Option::Some(new_node.clone());
                 self.ll.tail = Option::Some(new_node.clone());
-                self.prev_ptr = self.cur_ptr.clone();
+                self.prev_ptr.as_ref().unwrap().borrow_mut().next = Option::Some(new_node.clone());
                 self.cur_ptr = Option::Some(new_node.clone());
             }else{
                 //At any position other than head and tail
@@ -124,15 +124,17 @@ impl <'i,T> MutIterator<'i,T>{
 
             }
             return Option::Some(ret_val);
-
         }
-        
-        
+    }
+    
+    fn refresh(& mut self){
+        self.cur_ptr = self.ll.head.clone();
+        self.prev_ptr = Option::None;
     }
 }
 
 #[test]
-fn should_create_ll(){
+fn test_append_ll(){
    let s1: &String = & String::from("A");
    let s2: &String = & String::from("B");
    let s3: &String = & String::from("C");
@@ -147,3 +149,46 @@ fn should_create_ll(){
    assert_eq!(s2,it.next().unwrap());
    assert_eq!(s3,it.next().unwrap());
 }
+
+#[test]
+fn test_put_at_start_ll(){
+    let s1: &String = & String::from("A");
+    let s2: &String = & String::from("B");
+    let s3: &String = & String::from("C");
+    let mut ll : MyFirstSinglyLL<String> = MyFirstSinglyLL ::new();
+    ll.append( s2);
+    ll.append( s3);
+ 
+    let mut it:MutIterator<String> = ll.mut_iterator();
+    it.put(s1);
+    assert_eq!(s1,it.next().unwrap());
+    assert_eq!(s2,it.next().unwrap());
+    assert_eq!(s3,it.next().unwrap());
+ }
+ #[test]
+ fn test_put_at_end_ll(){
+    let s1: &String = & String::from("A");
+    let s2: &String = & String::from("B");
+    let s3: &String = & String::from("C");
+    let s4: &String = & String::from("D");
+    let mut ll : MyFirstSinglyLL<String> = MyFirstSinglyLL ::new();
+    ll.append( s1);
+    ll.append( s2);
+ 
+    let mut it:MutIterator<String> = ll.mut_iterator();
+    assert_eq!(s1,it.next().unwrap());
+    assert_eq!(s2,it.next().unwrap());
+    it.put(s3);
+    assert_eq!(s3,it.next().unwrap());
+    it.put(s4);
+    assert_eq!(s4, it.next().unwrap());
+    //refresh the iterator to iterate from the 0th index.
+    it.refresh();
+    assert_eq!(s1,it.next().unwrap());
+    assert_eq!(s2,it.next().unwrap());
+    assert_eq!(s3,it.next().unwrap());
+    assert_eq!(s4, it.next().unwrap());
+    
+ }
+
+
