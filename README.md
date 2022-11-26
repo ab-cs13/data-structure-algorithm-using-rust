@@ -5,7 +5,7 @@ To learn a language: implement data structures. Rust is no exception. But, we ne
 > Hey, Rust's docs is incredibly awesome. https://doc.rust-lang.org/std/
 
 ## <b> Rust References </b>
-Here I try my best to come up with missing pieces of programming fundamentals unknown to programmer (java programmers like me :) ) In java like programming language we rarely care about memory management. Most memory management related task is taken care by garbage collector. Garbage collector frees the memory when it runs. But, Rust's approach is unique. With ownership borrow concept, Rust able to determine exact points where drop / free can be called.
+Here I try my best to come up with missing pieces of programming fundamentals unknown to programmer (java programmers like me :) ) In java like programming language we rarely care about memory management. Most memory management related task is taken care by garbage collector. Garbage collector frees the memory when it runs. But, Rust's approach is unique. With ownership borrow concept, Rust able to determine exact points where drop / free can be called. In this journey, I will go through different data structures and algorithms.
 
 ### Fundamentals Of Memory Allocation: 
 Stack and Heap : Both stack and heaps are parts of memory available to program to use during runtime. If the size of the data is known during compile time, memory is allocated from stack. If size of the data is unknown during compile time it is preferred (In C we can allocate memory from stack using alloc system call !!! )  to allocate memory from heap and starting address of heap memory is returned as pointer which stays in stack memory. It is really  easy to manage memory allocated from stack. When control goes outside the scope of 
@@ -390,6 +390,8 @@ I am going to implement following data structures and algorithms. I won't be exp
 * Stack : Linked list based stack my_stack
 * my_persistent_stack
 * my_linked_list
+* doubly linked list
+* single linked list with mutable iterator
 
 ## Raw pointers and Unsafe Rust 
 Unsafe Rust exists because, by nature, static analysis is conservative. When the compiler tries to determine whether or not code upholds the guarantees, it’s better for it to reject some valid programs than to accept some invalid programs. Although the code might be okay, if the Rust compiler doesn’t have enough information to be confident, it will reject the code. In these cases, you can use unsafe code to tell the compiler, “Trust me, I know what I’m doing.” Be warned, however, that you use unsafe Rust at your own risk: if you use unsafe code incorrectly, problems can occur due to memory unsafety, such as null pointer dereferencing.Rust needs to allow  to do low-level systems programming, such as directly interacting with the operating system or even writing  own operating system. 
