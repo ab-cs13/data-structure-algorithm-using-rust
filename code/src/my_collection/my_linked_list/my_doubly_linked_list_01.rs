@@ -220,7 +220,9 @@ impl Iterator for IterFromFront{
 
     
 }
-
+//TODO implement iterator to start from rear end
+//TODO implement drop trait
+//TODO implement mutable iterator
 
 #[test]
 fn test_append(){

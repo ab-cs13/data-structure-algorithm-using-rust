@@ -10,6 +10,10 @@ struct TreeNode{
     right : Option<Rc<RefCell<TreeNode>>>,
     parent : Option<Rc<RefCell<TreeNode>>> 
 }
+/**
+ * Each insertion will insert node recursively following the pattern { Root->Left->Right }. The insertion pattern is equivalent 
+ * to BFS traversal of binary tree. 
+ */
 
 struct MyFirstBinaryTree{
     root : Option<Rc<RefCell<TreeNode>>>,
@@ -30,7 +34,7 @@ impl MyFirstBinaryTree{
         if self.root.is_none(){
             self.root = Option::Some(new_node.clone());
         }else{
-            
+
         }
     }
 }

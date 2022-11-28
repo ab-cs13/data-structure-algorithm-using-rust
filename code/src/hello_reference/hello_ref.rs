@@ -107,7 +107,7 @@ fn my_string_len_cal(s:String)->(usize,String){
 }
 #[test]
 fn bar(){
-  let mut s=String::from("Hello");
+  let mut s = String::from("Hello");
   let r1 = &s;
   let _r2 = &s;
   println!("{}",r1)
@@ -124,3 +124,37 @@ fn foo_10(){
     println!("ref_2:{}",ref_2);
   }
 */
+#[test]
+fn test_12(){
+  let mut s=String::from("Hello");
+  {
+      let r1 = &s;
+      println!("{}",r1);
+  }
+  {
+    let r2 = & mut s;
+    r2.push('!');
+    println!("{}",r2);
+  }
+  let r3 = & s;
+  let r4 = & s;
+  println!("{}",r3);
+  println!("{}",r4);
+  println!("{}",& mut s);
+  println!("{}",& s);
+}
+#[test]
+fn test_13() {
+  let mut i:i32 = 3;
+  {
+      let r1 = & i;
+      println!("{}",r1);
+  }
+  {
+      let r2 = & mut i;
+      (*r2) = 5;
+      println!("{}",r2);
+  }
+  let r3 = & i;
+  println!("{}",r3);
+}

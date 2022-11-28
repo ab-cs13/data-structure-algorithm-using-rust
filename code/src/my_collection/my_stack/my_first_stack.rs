@@ -18,12 +18,12 @@ enum NextPtr<'b, T>{
 }
 //head of the stack could be EMPTY (at the beginning) and NONEMPTY when elements are pushed in the stack.
 //Lifetime parameter is there as we are dealing with references.
-pub struct MyFirstStack<'s, T>{
+struct MyFirstStack<'s, T>{
     head : NextPtr<'s, T>,
 }
 impl <'s,T>MyFirstStack<'s,T>{
     //creates a stack with EMPTY value
-    pub fn new()->Self{
+    fn new()->Self{
         let stack = MyFirstStack{
             head:NextPtr::EMPTY,    
         };
@@ -42,7 +42,7 @@ impl <'s,T>MyFirstStack<'s,T>{
      we are going to use std::mem::replace function, to set some temporary value in head and get the current value stored in head.
      The returned value of replace function call will be assigned to new_node.next.
     */
-    pub fn push(& mut self, input:& 's T){
+    fn push(& mut self, input:& 's T){
        let temp=std::mem::replace(& mut self.head, NextPtr::EMPTY); 
        // In Java class (equivalent to struct) can't get memory from stack. Only from heap we can allocate memory. This is because Java
        // GC, manages the heap memory.
@@ -57,7 +57,7 @@ impl <'s,T>MyFirstStack<'s,T>{
        self.head = NextPtr::NONEMPTY(Box::new(new_node));
     }
     //pop method returns the reference of the element stored at head and deletes it.
-    pub fn pop(& mut self)->Option<& 's T>{
+    fn pop(& mut self)->Option<& 's T>{
      //we can't just do 
      // 1: temp=head;
      // 2: head = head.next;

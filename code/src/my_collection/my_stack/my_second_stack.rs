@@ -20,7 +20,7 @@ struct Node<'n,T>{
 /**
  * A simple stack implementation.
  */
-pub struct MySecondStack <'s,T>{
+struct MySecondStack <'s,T>{
     head : Option<Box<Node<'s,T>>>,
 }
 
@@ -28,13 +28,13 @@ impl <'s,T> MySecondStack <'s,T>{
     /**
      * Creates an empty stack
      */
-    pub fn new()->Self{
+    fn new()->Self{
         MySecondStack { head: Option::None }
     }
     /**
      * Add a new elemnt at head position
      */
-    pub fn push(& mut self, input:& 's T){
+    fn push(& mut self, input:& 's T){
         let mut new_node:Box<Node<'s,T>>  = Box::new(Node{
             data:input,
             next : Option::None,
@@ -46,7 +46,7 @@ impl <'s,T> MySecondStack <'s,T>{
     /**
      * Returns the element of the head and removes the head
      */
-    pub fn pop(& mut self)->Option<& 's T>{
+    fn pop(& mut self)->Option<& 's T>{
         //can't do if let Option::Some(temp) = self.head because ownership of self.head will be transferred / moved to temp
         //and head become uninitialized causing compilation failure. we need to put something in head when we want the content 
         //of head. Therefore std::meme::replace is used to replace to put None and return the content of head  
@@ -62,7 +62,7 @@ impl <'s,T> MySecondStack <'s,T>{
     /**
      * Returns the element from the head without removing the head.
      */
-    pub fn peek(& self)->Option<& 's T>{
+    fn peek(& self)->Option<& 's T>{
         if let Option::Some(temp) = & self.head{
             return Option::Some(temp.data);
         }
@@ -94,7 +94,7 @@ impl <'s,T> Drop for MySecondStack<'s, T>{
 }
 
 #[test]
-pub fn test_push_pop(){
+fn test_push_pop(){
     let s1:String = String::from("A");
     let s2:String = String::from("B");
     let s3:String = String::from("C");

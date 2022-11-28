@@ -133,6 +133,8 @@ impl <'i,T> MutIterator<'i,T>{
     }
 }
 
+//TODO implement drop trait
+
 #[test]
 fn test_append_ll(){
    let s1: &String = & String::from("A");
@@ -190,5 +192,6 @@ fn test_put_at_start_ll(){
     assert_eq!(s4, it.next().unwrap());
     
  }
+//TODO test del using iterator
 
 

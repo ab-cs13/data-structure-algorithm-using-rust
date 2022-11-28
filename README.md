@@ -1,11 +1,11 @@
 # hello-rust
-To learn a language: implement data structures. Rust is no exception. But, we need think in Rust way (probably the best way) to implement data structures. First of all we have to understand the concepts of lifetime, borrow  and ownership of Rust. 
-* Note : This is not a rust tutorial
+To learn a language; implement data structures. Rust is no exception. But, we need think in Rust way (probably the best way) to implement data structures. First of all we have to understand the concepts of lifetime, borrow  and ownership of Rust. 
+* Note : This is not a rust tutorial. Rather it is a repository of data structures / algorithms implemented in Rust to understand Rust 
 
 > Hey, Rust's docs is incredibly awesome. https://doc.rust-lang.org/std/
 
 ## <b> Rust References </b>
-Here I try my best to come up with missing pieces of programming fundamentals unknown to programmer (java programmers like me :) ) In java like programming language we rarely care about memory management. Most memory management related task is taken care by garbage collector. Garbage collector frees the memory when it runs. But, Rust's approach is unique. With ownership borrow concept, Rust able to determine exact points where drop / free can be called. In this journey, I will go through different data structures and algorithms.
+Here we will find the missing pieces of programming fundamentals unknown to java programmers like me :(.  In java like programming language we rarely care about memory management. Most memory management related task is taken care by garbage collector. Garbage collector frees the memory when it runs. But, Rust's approach is unique. With ownership borrow concept, Rust able to determine exact points where drop / free can be called. In this journey, I will go through different data structures and algorithms.
 
 ### Fundamentals Of Memory Allocation: 
 Stack and Heap : Both stack and heaps are parts of memory available to program to use during runtime. If the size of the data is known during compile time, memory is allocated from stack. If size of the data is unknown during compile time it is preferred (In C we can allocate memory from stack using alloc system call !!! )  to allocate memory from heap and starting address of heap memory is returned as pointer which stays in stack memory. It is really  easy to manage memory allocated from stack. When control goes outside the scope of 
@@ -195,7 +195,7 @@ fn foo_04(){
 * Imagine we need an utility method to calculate length of String. If we pass the String  smart pointer, the caller is going to loose the ownership. But, as good utility API design, utility API shouldn't ask the caller to loose the ownership. One solution could be deep copy. But deep copy can hurt the performance causing denial of service. Other solution could be return the same smart pointer to the caller which is passed as an argument along with the result of the utility function inside a tuple. This is not a readable solution. The solution is reference of the smart pointer. This called borrow in Rust. 
 
  ### Borrowing
- * Let's build our simple utility to calculate length 
+ * Let's build our simple utility to calculate length of a String
 ```   
 #[test]
 fn foo_07(){
@@ -236,19 +236,107 @@ fn bar(){
   println!("r1:{},r2:{}",r1,r2);
 }
 ```
-Above code will not compile. We can not borrow 's' as mutable more than once and keep using them all. We can use only one. Refer below code. Though we have r1 and r2, we just using r1.
+Above code will not compile. We can not borrow 's' as mutable more than once and keep using them all. We can use only one. 
+* In the below code snippet. The variable 's' is mutable. But, 'r1' and 'r2' both reference are & s (not & mut s). Therefore no compilation error. Another important point to note : Though 's' is a mutable variable, we have not mutated the value. Compiler neither find any assignment operation.
 ```
 #[test]
 fn bar(){
-  let mut s=String::from("Hello");
+  let mut s = String::from("Hello");
   let r1 = &s;
   let r2 = &s;
-  println!("{}",r1)
+  println!("{}, {}",r1,r2);
 }
-//Also refer hello_ref::foo_10()
+```
+Let's consider another example. In the below code snippet, though we have mutated the 's', but we have not used '& s' after mutating the value.
+```
+fn main() {
+    let mut s=String::from("Hello");
+    let r3 = & s;
+    let r4 = & s;
+    println!("{}",r3);
+    println!("{}",r4);
+    s= String::from("Bye");
+    println!("{}",s);
+}
+```
+Below code snippet will generate compilation error
+```
+fn main() {
+    let mut s=String::from("Hello");
+    let r3 = & s;
+    let r4 = & s;
+    println!("{}",r3);
+    println!("{}",r4);
+    s= String::from("Bye");
+    println!("{}",s);
+    println!("{}",r3);
+}
+   Compiling playground v0.0.1 (/playground)
+error[E0506]: cannot assign to `s` because it is borrowed
+ --> src/main.rs:7:5
+  |
+3 |     let r3 = & s;
+  |              --- borrow of `s` occurs here
+...
+7 |     s= String::from("Bye");
+  |     ^ assignment to borrowed `s` occurs here
+8 |     println!("{}",s);
+9 |     println!("{}",r3);
+  |                   -- borrow later used here
+
+For more information about this error, try `rustc --explain E0506`.
+error: could not compile `playground` due to previous error
+
+
 ```
 * We can have multiple immutable references. No issues.
-* We can not have a mutable reference while we have an immutable reference of the same variable. & v and & mut v is mutually exclusive where v is a mutable variable.
+* We can not have a mutable reference while we have an immutable reference of the same variable. & v and & mut v is mutually exclusive in a scope or where v is a mutable variable. There should be no intersection point between the scope of '& v' and '& mut v'. Consider below code snippet
+```
+fn main() {
+    let mut s=String::from("Hello");
+    {
+        let r1 = &s;
+        println!("{}",r1);
+    }
+    {
+        let r2 = & mut s;
+        println!("{}",r2);
+    }
+    let r3 = & s;
+    let r4 = & s;
+    println!("{}",r3);
+    println!("{}",r4);
+    println!("{}",& mut s);
+    println!("{}",& s);
+}
+```
+'r1' and 'r2' doesn't have any intersection point. And no intersection point when we call println!. When I say 'r1' and 'r2' does not have any intersection point, I mean the lifetime associated with 'r1' and 'r2' doesn't have any intersection. 
+```
+println!("{}",& mut s);
+println!("{}",& s);
+```
+Both invocation have their own call stack and scope.( println! is a macro may not have call stack). Another example
+```
+fn main() {
+    let mut i:i32 = 3;
+    {
+        let r1 = & i;
+        println!("{}",r1);
+    }
+    {
+        let r2 = & mut i;
+        (*r2) = 5;
+        println!("{}",r2);
+    }
+    let r3 = & i;
+    println!("{}",r3);
+ }
+ //output 
+ // 3
+ // 5 
+ // 5
+```
+
 * Dangling references can't be possible. We can not borrow a reference if the variable is dropped. below code will not compile. We are returning &s. When control goes outside of bar(), s is dropped and &s become invalid.
  ```
  fn foo(){
@@ -333,7 +421,7 @@ struct Foo<'s>{
 ```
 Here we are saying lifetime of variable of type Foo is less than equal to lifetime of data which is a reference to a String.
 
-* Rc and Box : Rc and Box are smart pointers to allocate memory from heap. Rc stand for reference counted. When we use Rc, Rc keeps track of pointer holding the address of the memory location allocated from the heap for the same Rc pointer. Box is equivalent to new operator in Java. More detailed documentation is there in Rust docs. When I start using these two smart pointers (and their siblings; they have siblings too) I must admit I got confused because in Java, we do <br>
+* Rc and Box : Rc and Box are smart pointers to allocate memory from heap. Rc stand for reference counted. When we use Rc, Rc keeps track of pointer holding the address of the memory location allocated from the heap for the same Rc pointer. Box is equivalent to new operator in Java. More detailed documentation is there in Rust docs. When I start using these two smart pointers (and their siblings; they have siblings too) I must admit I got confused because in Java <br>
  ```
  public class User{
   String name;
@@ -352,7 +440,9 @@ let mut user : Box<User> = Box::new(User{name : String::from("cd")});
 user.name = "ab"
 println!("{}",user.name);
 ```
-For me in Rust the type of user variable is bit unreadable initially. Perhaps due to my experience with Java. treat Box, Rc and its siblings as new operator in java. These smart pointer gives direct access to the type they wrap.
+For me in Rust the type of user variable is bit unreadable initially, perhaps due to my experience with Java. Treat Box, Rc and its siblings as new operator in java. These smart pointer gives direct access to the type they wrap.
+
+
 
 ## A closer look on Box, Rc and RefCell
 Box is a pointer to heap. In Rust we don't have null, therefore the Box pointer is kept inside Option. Option enum keeps the pointer. The type of next is not readable when compare it to C or Java. Box is same as new in Java. new has return value of class it self but, Box has type Box<T> but using the variable of Box<T> we can access attributes of T 
@@ -365,7 +455,7 @@ struct Node{
 In linked list tail and previous node of tail points to the same memory address. Box won't allow multiple reference holding same memory location. When the size of the queue will be 1, both head and tail point to the same memory location. During push tails will try to append new node and during pop head will try to remove node from head. To design the queue our only option is Option<Rc<RefCell<Node>>>. Another problem with blow structure is interior mutability. When we add a new node at the rear end we need to update the next pointer of tail. But, incase stack next pointer of new node holds the address of head and address of head is always known value while setting value new node.
 
 ```
-struct MyUnsafeQueue{
+struct MyLinkedList{
     head : Option<Box<Node>>,  
     tail : Option<Box<Node>> 
 }
@@ -381,17 +471,19 @@ Stack{
 ```
 ## Destructor (TODO)
 
-## Implemented data structures:
-I am going to implement following data structures and algorithms. I won't be explaining those. Code has explanations why it is done that way. I have kept the explanation as simple as possible. Linked list based data structure is a good starting point.
+## Implemented data structures to understand Rust fundamentals:
+I am going to implement following data structures to understand fundamental concepts of Rust. I won't be explaining those here. Code has explanations why it is done that way. I have kept the explanation as simple as possible. Linked list based data structure is a good starting point.
 
 > Linked lists were a great innovation for simple computer architectures similar to the 1970-era PDP-11, but they defeat most of the hardware acceleration features of modern architectures with their parallel and pipelined execution resources. Multi-level memory caches, single- and multi-issue instruction pipelines, look-aside address translation and branch prediction caches, parallel arithmetic and logical execution units, etc. all end up stalling or being massively under-utilized when chasing linked lists. Think about false sharing while using linked list
 
-* Follow the below sequence
+* Follow the below sequence 
 * Stack : Linked list based stack my_stack
 * my_persistent_stack
-* my_linked_list
-* doubly linked list
-* single linked list with mutable iterator
+* my_linked_list i) doubly linked list ii) single linked list with mutable iterator
+
+## Other implemented data structures   
+* binary tree
+* binary search tree (balanced )
 
 ## Raw pointers and Unsafe Rust 
 Unsafe Rust exists because, by nature, static analysis is conservative. When the compiler tries to determine whether or not code upholds the guarantees, it’s better for it to reject some valid programs than to accept some invalid programs. Although the code might be okay, if the Rust compiler doesn’t have enough information to be confident, it will reject the code. In these cases, you can use unsafe code to tell the compiler, “Trust me, I know what I’m doing.” Be warned, however, that you use unsafe Rust at your own risk: if you use unsafe code incorrectly, problems can occur due to memory unsafety, such as null pointer dereferencing.Rust needs to allow  to do low-level systems programming, such as directly interacting with the operating system or even writing  own operating system. 
