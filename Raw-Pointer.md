@@ -1,0 +1,67 @@
+## Raw pointers and Unsafe Rust 
+Unsafe Rust exists because, by nature, static analysis is conservative. When the compiler tries to determine whether or not code upholds the guarantees, it’s better for it to reject some valid programs than to accept some invalid programs. Although the code might be okay, if the Rust compiler doesn’t have enough information to be confident, it will reject the code. In these cases, you can use unsafe code to tell the compiler, “Trust me, I know what I’m doing.” Be warned, however, that you use unsafe Rust at your own risk: if you use unsafe code incorrectly, problems can occur due to memory unsafety, such as null pointer dereferencing.Rust needs to allow  to do low-level systems programming, such as directly interacting with the operating system or even writing  own operating system. 
+
+* Raw pointers can either be mutable or immutable which is similar to C pointers and pointers to constant respectively  
+```
+let mut num = 5;
+let r1 = &num as *const i32; 
+let r2 = &mut num as *mut i32;
+```
+'r1' declared as pointer to constant. since num is mutable we can either have a mutable pointer or pointer to a constant. To define raw pointers unsafe block is not required 
+> We can't have a mutable raw pointer '&mut num as *mut' from a immutable variable. Exactly same as reference. We can't have a '& mut' from immutable variable.
+
+* We can create a raw pointer from any arbitrary memory location
+```
+fn main() {
+    let address = 0x012345usize;
+    let r = address as *const i32;
+}
+```
+* Unsafe block allows dereference a raw pointer. Creating a pointer does no harm; it’s only when we try to access the value that it points at that we might end up dealing with an invalid value. 
+```
+fn main() {
+    let mut num = 5;
+
+    let r1 = &num as *const i32;
+    let r2 = &mut num as *mut i32;
+
+    unsafe {
+        println!("r1 is: {}", *r1);
+        println!("r2 is: {}", *r2);
+    }
+}
+/*
+Below code will not compile.
+*/
+fn main() {
+    let mut num = 5;
+    let r1 = & num;
+    let r2 = & mut num;
+    
+    println!("{}",r1);
+    println!("{}",r2);
+}
+
+```
+> Note we have created *const i32 and *mut i32 raw pointers that both pointed to the same memory location, where num is stored. If we instead tried to create an immutable and a mutable reference to num, the code would not have compiled because Rust’s ownership rules don’t allow a mutable reference at the same time as any immutable references. With raw pointers, we can create a mutable pointer and an immutable pointer to the same location and change data through the mutable pointer, potentially creating a data race. Be careful!   
+
+* We can have multiple mutable raw pointer. This is not possible with reference
+ ```
+ fn main() {
+    let mut num = 5;
+    let r1 = &mut num as *mut i32;
+    let r2 = &mut num as *mut i32;
+    unsafe{
+    println!("{}",*r1);
+    println!("{}",*r2);
+    }
+}
+``` 
+Refer hello_unsafe module in src to find more details. I have created a single linked list using raw pointers. 
+
+* Places where unsafe code is the only way
+  <br>1: Dereference a raw pointer (already discussed)
+  <br>2: Call an unsafe function or method
+  <br>3: Access or modify a mutable static variable
+  <br>4: Implement an unsafe trait
+  <br>5: Access fields of unions (to access C union)
