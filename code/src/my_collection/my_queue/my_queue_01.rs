@@ -1,3 +1,4 @@
+//TODO complete the implementation and explain why it is not possible having tail holding the reference; i.e. tail not a Rc
 struct Node{
     data : i32,
     next : Option<Box<Node>>,
