@@ -1,6 +1,14 @@
 /*
+┌─────────────────────────────────┐
+│                                 │
+│In Order Traversal of Binary Tree│
+│                                 │
+└─────────────────────────────────┘
+
+*/
+/*
  We are going to create a simple binary tree. Each insertion will insert node recursively { Root->Left->Right }. Similar to
- BFS traversal.
+ BFS traversal. In this binary tree example we are only going to perform in-order traversal and test the behavior.
 */
 
 use std::{rc::Rc, cell::RefCell, collections::HashSet};
@@ -16,14 +24,14 @@ struct TreeNode<'t>{
  * to BFS traversal of binary tree. 
  */
 
-struct MyFirstBinaryTree<'a>{
+struct BinaryTree<'a>{
     root : Option<Rc<RefCell<TreeNode<'a>>>>,
     queue_for_insert : Vec<Rc<RefCell<TreeNode<'a>>>>,
 }
 
-impl <'a>MyFirstBinaryTree<'a>{
+impl <'a>BinaryTree<'a>{
     fn new()->Self{
-        return MyFirstBinaryTree { 
+        return BinaryTree { 
             root: Option::None ,
             queue_for_insert:Vec::new()};
     }
@@ -61,20 +69,25 @@ impl <'a>MyFirstBinaryTree<'a>{
         }
     }
     fn do_inorder(& self,temp_node:& Rc<RefCell<TreeNode<'a>>>, nodes: & mut Vec<& 'a String>){
-        if temp_node.borrow().left.is_none(){
-            nodes.insert(nodes.len(), temp_node.borrow().data);
+        if temp_node.borrow().left.is_some(){
+            self.do_inorder(temp_node.borrow().left.as_ref().unwrap(), nodes);
             if temp_node.borrow().right.is_some(){
+                nodes.insert(nodes.len(), temp_node.borrow().data);
                 self.do_inorder(temp_node.borrow().right.as_ref().unwrap(), nodes);
+            }else{
+                nodes.insert(nodes.len(), temp_node.borrow().data);
             }
         }else{
-            self.do_inorder(temp_node.borrow().left.as_ref().unwrap(), nodes);
+            nodes.insert(nodes.len(), temp_node.borrow().data);
         }
+    }
 
+    fn get_in_order_iter(& mut self)->BinaryTreeInOrderIter<'a>{
+        return BinaryTreeInOrderIter ::new(self.root.clone().unwrap());
     }
 }
 
 struct BinaryTreeInOrderIter<'s>{
-    //lifetime of data is >= lifetime of tree node. That's why two lifetime.
     tree_nodes_stack : Vec< Rc<RefCell<TreeNode<'s>>>>,
     visited_nodes : HashSet<usize>
 
@@ -133,8 +146,87 @@ impl<'s> Iterator for BinaryTreeInOrderIter<'s>{
         
     }
 
-
+/**
+ *               Tree is
+ *                 1
+ *               /   \
+ *              /     \
+ *             2       3 
+ *            / \     /  \
+ *           /   \   /    \
+ *          5    6  7      8
+ *  In order traversal will generate nodes : 5 → 2 → 6 → 1 → 8 → 3 → 7
+ * 
+ *  */     
 #[test]
-fn test_01(){
+fn test_recursive_inorder_01(){
+   let s1 : String = String::from("1");
+   let s2 : String = String::from("2");
+   let s3 : String = String::from("3");
+   let s5 : String = String::from("5");
+   let s6 : String = String::from("6");
+   let s8 : String = String::from("8");
+   let s7 : String = String::from("7");
 
+   let mut binary_tree : BinaryTree = BinaryTree::new();
+   binary_tree.insert(& s1);
+   binary_tree.insert(& s2);
+   binary_tree.insert(& s3);
+   binary_tree.insert(& s5);
+   binary_tree.insert(& s6);
+   binary_tree.insert(& s8);
+   binary_tree.insert(& s7);
+
+   let nodes : Vec<& String> = binary_tree.recursive_in_order();
+   eprintln!("length :::{}", nodes.len());
+   let mut i=0;
+   while i < nodes.len(){
+    eprintln!("element : {}", *(nodes.get(i).unwrap()));
+    i = i+1;
+   }
+   
+   assert_eq!(*(nodes.get(0).unwrap()),& s5);
+   assert_eq!(*nodes.get(1).unwrap(),& s2);
+   assert_eq!(*nodes.get(2).unwrap(),& s6);
+   assert_eq!(*nodes.get(3).unwrap(),& s1);
+   assert_eq!(*nodes.get(4).unwrap(),& s8);
+   assert_eq!(*nodes.get(5).unwrap(),& s3);
+   assert_eq!(*nodes.get(6).unwrap(),& s7);
 }
+
+/**
+ *               Tree is
+ *                 1
+ *               /   \
+ *              /     \
+ *             2       3 
+ *            / \     /  \
+ *           /   \   /    \
+ *          5    6  7      8
+ *  In order traversal will generate nodes : 5 → 2 → 6 → 1 → 8 → 3 → 7
+ * 
+ *  */ 
+#[test]
+fn test_iterator(){
+    let s1 : String = String::from("1");
+    let s2 : String = String::from("2");
+    let s3 : String = String::from("3");
+    let s5 : String = String::from("5");
+    let s6 : String = String::from("6");
+    let s8 : String = String::from("8");
+    let s7 : String = String::from("7");
+ 
+    let mut binary_tree : BinaryTree = BinaryTree::new();
+    binary_tree.insert(& s1);
+    binary_tree.insert(& s2);
+    binary_tree.insert(& s3);
+    binary_tree.insert(& s5);
+    binary_tree.insert(& s6);
+    binary_tree.insert(& s8);
+    binary_tree.insert(& s7);
+ 
+    let mut iter = binary_tree.get_in_order_iter();
+    while let Option::Some(temp)=iter.next(){
+        eprintln!("element : {}", temp);
+    }
+ }
