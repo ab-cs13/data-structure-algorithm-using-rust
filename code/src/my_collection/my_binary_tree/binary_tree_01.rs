@@ -58,7 +58,9 @@ impl <'a>BinaryTree<'a>{
         let  index_to_insert : usize = self.queue_for_insert.len(); 
         self.queue_for_insert.insert(index_to_insert, new_node.clone());
     }
-
+    /**
+     * Performs the in-order traversal and inserts those in the vector and returns the vector.
+     */
     fn recursive_in_order(& self)->Vec<& 'a String>{
         if self.root.is_none(){
             return Vec::new(); //just return an empty vector
@@ -230,3 +232,4 @@ fn test_iterator(){
         eprintln!("element : {}", temp);
     }
  }
+ //TODO test 
