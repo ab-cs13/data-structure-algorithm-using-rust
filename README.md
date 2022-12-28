@@ -18,7 +18,13 @@ I am going to implement following data structures to understand fundamental conc
 
 ## Other implemented data structures   
 * binary tree
-* binary search tree (balanced )
+* binary tree traversals DFS(in-order, pre-order, post-order) and BFS 
+* balanced binary search tree 
+* Queues
+* Max Heap and Min Heap
+* Sorting
+* Graph and Graph traversals
+* Minimal Spanning Trees
 
 ## Reference
 * https://doc.rust-lang.org/nightly/nomicon/intro.html 

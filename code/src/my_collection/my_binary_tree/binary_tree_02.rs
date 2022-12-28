@@ -6,7 +6,7 @@
 └─────────────────────────────────┘
 */
 
-use std::{rc::Rc, cell::RefCell};
+use std::{rc::Rc, cell::RefCell, collections::HashSet};
 
 //TreeNode_02 for pre-order traversal
 struct TreeNode<'s>{
@@ -40,6 +40,30 @@ impl <'s>BinaryTree<'s>{
         }
     }
 }
+
+struct Iter<'s>{
+    stack : Vec<Rc<RefCell<TreeNode<'s>>>>,
+    visited : HashSet<usize>
+} 
+
+impl<'s> Iter<'s>{
+    fn new()->Self{
+        let mut iter =  Iter { stack: Vec::new(), visited: HashSet::new() };
+
+        
+        return iter;
+    }
+}
+
+impl<'s> Iterator for Iter<'s>{
+    type Item = & 's String;
+
+    fn next(&mut self) -> Option<Self::Item> {
+
+        todo!()
+    }
+}
+
 
 #[test]
 fn test_01(){
