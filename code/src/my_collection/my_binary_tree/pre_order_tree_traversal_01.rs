@@ -14,6 +14,7 @@ struct TreeNode<'s>{
   left : Option<Rc<RefCell<TreeNode<'s>>>>,
   right : Option<Rc<RefCell<TreeNode<'s>>>> 
 }
+
 struct BinaryTree<'s>{
     root : Option<Rc<RefCell<TreeNode<'s>>>>
 }

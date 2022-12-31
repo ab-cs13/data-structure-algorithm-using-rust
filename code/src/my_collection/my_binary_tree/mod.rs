@@ -1,2 +1,3 @@
-pub mod binary_tree_01;
-pub mod binary_tree_02;
+pub mod in_order_tree_traversal_01;
+pub mod pre_order_tree_traversal_01;
+pub mod post_order_tree_traversal_01;
