@@ -4,6 +4,8 @@
 │Pre Order Binary Tree Traversal  │
 │                                 │
 └─────────────────────────────────┘
+Pre order tree traversal is also a variant of 
+root->left->right
 */
 
 use std::{rc::Rc, cell::RefCell, collections::HashSet};
@@ -14,7 +16,22 @@ struct TreeNode<'s>{
   left : Option<Rc<RefCell<TreeNode<'s>>>>,
   right : Option<Rc<RefCell<TreeNode<'s>>>> 
 }
-
+impl<'t> TreeNode<'t>{
+    fn new(element : & 't String,left_node:Option<TreeNode<'t>>,right_node:Option<TreeNode<'t>>)->Self{
+        let mut temp = TreeNode { data: element, left: Option::None, right: Option::None };
+        if let Option::Some(left) = left_node{
+            temp.left = Option::Some(Rc::new(RefCell::new(left)));
+        }
+        if let Option::Some(right) = right_node{
+            temp.right = Option::Some(Rc::new(RefCell::new(right)));
+        }
+        return temp;
+    }
+    fn unique_id(node : & Rc<RefCell<TreeNode<'t>>>)->usize{
+        let raw_ptr = node.as_ptr() as *const TreeNode;
+        return raw_ptr as usize;
+    }
+}
 struct BinaryTree<'s>{
     root : Option<Rc<RefCell<TreeNode<'s>>>>
 }
@@ -42,6 +59,31 @@ impl <'s>BinaryTree<'s>{
     }
 }
 
+impl <'s> Drop for BinaryTree<'s>{
+    fn drop(&mut self) {
+        if self.root.is_some(){
+            // we will perform BFS traversal and manually decrease the reference count to 0.
+            // We are going to use vec (memory allocated from heap) to perform BFS. Therefore, we will not face stack
+            // overflow problem.
+            let mut queue : Vec<Rc<RefCell<TreeNode<'s>>>> = Vec::new();
+            queue.insert(0, self.root.clone().unwrap());
+            while queue.len() > 0{
+                //remove the 1st element
+                let temp = queue.remove(0);
+                eprintln!("Dropping : {}",temp.borrow().data);
+                if temp.borrow().left.is_some(){
+                    queue.insert(queue.len(), temp.borrow().left.clone().unwrap());
+                    temp.borrow_mut().left = Option::None;
+                }
+                if temp.borrow().right.is_some(){
+                    queue.insert(queue.len(), temp.borrow().right.clone().unwrap());
+                    temp.borrow_mut().right = Option::None;
+                }
+            }
+
+        }//else nothing to do
+    }
+}
 struct Iter<'s>{
     stack : Vec<Rc<RefCell<TreeNode<'s>>>>,
     visited : HashSet<usize>

@@ -15,7 +15,7 @@
         D    E
 
 
-
+We need to implement Drop trait. Why ? Refer nots in post_order_tree_traversal_01.rs
 
 */          
 
@@ -50,7 +50,6 @@ impl <'a>BinaryTree<'a>{
     /**
      * Performs the in-order traversal and inserts those in the vector and returns the vector.
      */
-    //TODO FIX the recursive algo
     fn recursive_in_order(& self)->Vec<& 'a String>{
         if self.root.is_none(){
             return Vec::new(); //just return an empty vector
@@ -76,19 +75,45 @@ impl <'a>BinaryTree<'a>{
     }
 }
 
+impl <'s> Drop for BinaryTree<'s>{
+    fn drop(&mut self) {
+        if self.root.is_some(){
+            // we will perform BFS traversal and manually decrease the reference count to 0.
+            // We are going to use vec (memory allocated from heap) to perform BFS. Therefore, we will not face stack
+            // overflow problem.
+            let mut queue : Vec<Rc<RefCell<TreeNode<'s>>>> = Vec::new();
+            queue.insert(0, self.root.clone().unwrap());
+            while queue.len() > 0{
+                //remove the 1st element
+                let temp = queue.remove(0);
+                eprintln!("Dropping : {}",temp.borrow().data);
+                if temp.borrow().left.is_some(){
+                    queue.insert(queue.len(), temp.borrow().left.clone().unwrap());
+                    temp.borrow_mut().left = Option::None;
+                }
+                if temp.borrow().right.is_some(){
+                    queue.insert(queue.len(), temp.borrow().right.clone().unwrap());
+                    temp.borrow_mut().right = Option::None;
+                }
+            }
+
+        }//else nothing to do
+    }
+}
+
 struct InOrderIter<'s>{
-    tree_nodes_stack : Vec< Rc<RefCell<TreeNode<'s>>>>,
+    stack : Vec< Rc<RefCell<TreeNode<'s>>>>,
     visited_nodes : HashSet<usize>
 
 }
 impl<'s> InOrderIter<'s>{
     fn new(root_ref :Rc<RefCell<TreeNode<'s>>> )->Self{
         let mut inorder_iter : InOrderIter = InOrderIter { 
-            tree_nodes_stack: Vec::new(),
+            stack: Vec::new(),
             visited_nodes : HashSet::new()
         };
         //just push the root node
-        inorder_iter.tree_nodes_stack.push(root_ref);
+        inorder_iter.stack.push(root_ref);
         return inorder_iter;
     }
 } 
@@ -96,11 +121,11 @@ impl<'s> Iterator for InOrderIter<'s>{
     type Item = & 's String;
 
     fn next(&mut self) -> Option<Self::Item> {    
-       if self.tree_nodes_stack.is_empty(){
+       if self.stack.is_empty(){
         return Option::None;
        }else{
          //get the stack top to verify whether any stack_top.left exists or not
-         let mut stack_top  = self.tree_nodes_stack.get(self.tree_nodes_stack.len()-1).unwrap().clone();
+         let mut stack_top  = self.stack.last().unwrap().clone();
          
          //if stack top has left child traverse till there is no left child
          /*
@@ -115,15 +140,15 @@ impl<'s> Iterator for InOrderIter<'s>{
             if self.visited_nodes.contains(&temp_mem_address){
                 break;
             }
-            self.tree_nodes_stack.push(temp_left.clone());
+            self.stack.push(temp_left.clone());
             stack_top = temp_left.clone();
          }
          //Now we have reached the end of the left child traversal
          //pop the stack top
-         let popped_element=self.tree_nodes_stack.pop().unwrap();
+         let popped_element=self.stack.pop().unwrap();
          //if the popped element has a right child push it inside the stack. 
          if let Option::Some(right_child) = popped_element.borrow().right.clone(){
-            self.tree_nodes_stack.push(right_child);
+            self.stack.push(right_child);
          }
          let raw_ptr_of_popped_one = popped_element.as_ptr() as *const TreeNode;
          let mem_address_of_popped = raw_ptr_of_popped_one as usize; 
